@@ -1,0 +1,51 @@
+.container {
+    padding: 10px;
+}
+
+.dot {
+    height: 20px;
+    width: 20px;
+    background-color: rgb(141, 141, 141);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.active {
+    background-color: green;
+}
+
+.event-log_container {
+    width: 70%;
+    /* margin-left: 10%; */
+}
+
+.event-log-item-container {
+    height: 220px;
+    width: 60%;
+    border: 1px solid #ccc;
+    font: 15px Courier;
+    overflow: auto;
+    margin: 10px;
+}
+
+.event-log-item-container > span {
+    display: grid;
+}
+
+.ipfs-container {
+    background-color: white;
+    height: 100vw;
+    padding: 10px;
+}
+
+.event-logs-header {
+    padding: 10px;
+}
+
+.container {
+    /* display: flex; */
+}
+
+.file-input {
+    
+}

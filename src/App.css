@@ -1,0 +1,48 @@
+.App {
+  /* background: blue; */
+  background-image: linear-gradient(rgb(183, 0, 255) , rgb(6, 2, 255), rgb(4, 10, 99));
+  height: 100vw;
+}
+
+.App-header {
+  padding: 5px;
+  background-color: #282c34;
+  flex-direction: column;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-header > button {
+  float: right;
+}
+
+.App-body {
+  margin: 10px;
+  display: grid;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.login_component {
+  display: inline-grid;
+  padding: 20px;
+  border: solid 1px black;
+  background: white;
+  margin:auto;
+  margin-top: 100px;
+}
+
+.login_component > span {
+  padding: 10px;
+}
+
+/* TODO: move to login component when created */
+.login-form {
+  display: inline-grid;
+}
+
+.login-form > input {
+  margin-top: 10px;
+}
