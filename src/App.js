@@ -1,10 +1,13 @@
 import { render } from '@testing-library/react';
 import React from 'react';
 import './App.css';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 import IpfsComponent from './components/ipfs/ipfs.component';
+import { makeStyles } from '@material-ui/core/styles';
+
 
 class App extends React.Component {
-  
 
   constructor(props) {
     super(props);
@@ -35,7 +38,9 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
-          MERCURY
+          <span>
+            IRIS
+          </span>
           { this.state.connect === true ? 
               <button onClick={this.handleRefresh.bind(this)}>
                 Disconnect
@@ -47,14 +52,18 @@ class App extends React.Component {
               <IpfsComponent host="localhost" port="9944" />
             </div>
           : 
-          <div className="login_component">
+          <div className="login-component">
             <span>
               Set the host and port that substrate is listening on for WS connections.
             </span>
             <form className="login-form">
-              <input type="text" placeholder="host" value={ this.state.host } onChange={ this.handleHostUpdate.bind(this) } />
-              <input type="text" placeholder="port" value={ this.state.port } onChange={ this.handlePortUpdate.bind(this) } />
-              <input type="submit" value="Connect" onClick={ this.handleConnect.bind(this) } />
+              <div className="form-field-container">
+                <TextField className="login-form-field" label="Host" variant="outlined" value={ this.state.host } onChange={ this.handleHostUpdate.bind(this)  } />
+                <TextField className="login-form-field" label="Port" variant="outlined" value={ this.state.port } onChange={ this.handlePortUpdate.bind(this) } />
+              </div>
+              <Button className="login-form-button" variant="contained" className="login-submit-btn" color="primary" onClick={ this.handleConnect.bind(this) } >
+                Connect  
+              </Button>
             </form>
         </div>
           }

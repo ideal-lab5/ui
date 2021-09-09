@@ -52,9 +52,9 @@ class IpfsComponent extends React.Component {
               ConnectionCommand: '_ConnectionCommand',
               DataCommand: '_DataCommand',
               DhtCommand: '_DhtCommand',
-              Address: 'AccountId',
-              LookupSource: 'AccountId',
-              AccountInfo: 'AccountInfoWithDualRefCount'
+              Address: 'MultiAddress',
+              LookupSource: 'MultiAddress',
+              // AccountInfo: 'AccountInfoWithDualRefCount'
           }
       });
       await api.isReady;
@@ -87,40 +87,35 @@ class IpfsComponent extends React.Component {
   }
 
   async addBytes(bytesAsString, filename) {
-    const module = this.state.api.tx.templateModule;
     this.setState({ isRunning: true });
-    module.ipfsAddBytes(bytesAsString, filename).signAndSend(this.state.account, this.captureEventLogs)
-      .then(res => this.setState({ isRunning: false }))
+    this.state.api.tx.templateModule.ipfsAddBytes(bytesAsString, filename).signAndSend(this.state.account, this.captureEventLogs)
+      .then(res => {
+        this.setState({ isRunning: false });
+      })
       .catch(err => console.error(err));
   }
 
   async catBytes(cid) {
-    const module = this.state.api.tx.templateModule;
-    await module.ipfsCatBytes(cid).signAndSend(this.state.account, this.captureEventLogs);
+    await this.state.api.tx.templateModule.ipfsCatBytes(cid).signAndSend(this.state.account, this.captureEventLogs);
+  }
+
+  async getProviders(cid) {
+    await this.state.api.tx.templateModule.ipfsDhtFindProviders(cid).signAndSend(this.state.account, this.captureEventLogs);
   }
 
   async updateStorage() {
       let entries = await this.state.api.query.templateModule.fsMap.entries();
       // assume we're synced with the entries to a certain extent, and we'll assume order is preserved
-      console.log('all: ' + JSON.stringify(entries));
       let newItems = [];
-      // this.state.ipfsItems.length
       for(let i = 0; i < entries.length; i++) {
-        // if (i >= this.state.ipfsItems.length) {
           const entry = entries[i];
           const cid = this.hexToAscii(String(entry[0]).substr(100));
-          const owner = String(entry[1][0]);
-          const filename = this.hexToAscii(String(entry[1][1]).substr(2));
+          const filename = this.hexToAscii(String(entry[1]).substr(2));
           newItems.push({
             cid: cid,
-            owner: owner,
             filename: filename,
           });
-        // }
       }
-      // newItems = this.state.ipfsItems.concat(newItems);
-      // console.log('was: ' + JSON.stringify(this.state.ipfsItems));
-      // console.log(/'adding: ' + JSON.stringify(newItems));
       this.setState({ ipfsItems: newItems });
   }
 
@@ -131,19 +126,25 @@ class IpfsComponent extends React.Component {
         const eventData = event.data;
         if (event.method === 'NewCID') {
           this.updateStorage();
-          const sender = String(eventData[0]);
-          const cid = this.hexToAscii(String(eventData[1]).substr(2)); 
-          const filename= this.hexToAscii(String(eventData[2]).substr(2)); 
-          let addEvents = this.state.newCIDEvents.concat({
-            account: sender,
-            cid: cid,
-            filename: filename,
-          });
-          this.setState({newCIDEvents: addEvents});
+          // const sender = String(eventData[0]);
+          // const cid = this.hexToAscii(String(eventData[1]).substr(2)); 
+          // const filename= this.hexToAscii(String(eventData[2]).substr(2)); 
+          // let addEvents = this.state.newCIDEvents.concat({
+          //   account: sender,
+          //   cid: cid,
+          //   filename: filename,
+          // });
+          // this.setState({newCIDEvents: addEvents});
         } else if (event.method === 'DataReady') {
           const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
           const filename = this.hexToAscii(String(eventData[1]).substr(2));
           this.download(fileContent, filename);
+        } else if (event.method === 'ProvidersResult') {
+          console.log(eventData);
+          eventData.forEach(d => {
+            const cid =  this.hexToAscii(String(d[0]).substr(2));
+            console.log(this.hexToAscii(String(d)));
+          });
         }
       });
     });
@@ -234,6 +235,10 @@ class IpfsComponent extends React.Component {
     e.preventDefault();
   }
 
+  handleFindProviders(cid) {
+    this.getProviders(cid);
+  }
+
   /*
     Containers
   */
@@ -246,7 +251,7 @@ class IpfsComponent extends React.Component {
               <TableRow>
                 <TableCell align="right">Filename</TableCell>
                 <TableCell align="right">CID</TableCell>
-                <TableCell align="right">Owner</TableCell>
+                {/* <TableCell align="right">Providers</TableCell> */}
                 <TableCell align="right">Download</TableCell>
               </TableRow>
             </TableHead>
@@ -255,14 +260,15 @@ class IpfsComponent extends React.Component {
                 <TableRow key={ idx }>
                   <TableCell align="right">{ item.filename  }</TableCell>
                   <TableCell align="right">{ item.cid }</TableCell>
-                  <TableCell align="right">{ item.owner }</TableCell>
+                  {/* <TableCell align="right">
+                    <button onClick={this.handleFindProviders.bind(this, item.cid)}>
+                      Find Providers
+                    </button>
+                  </TableCell> */}
                   <TableCell align="right">
                     <button onClick={this.handleDownload.bind(this, item.cid)}>
                       Download
                     </button>
-                    {/* <Fab color="primary" aria-label="add" onClick={this.handleDownload.bind(this, item.cid)}>
-                      <AddIcon />
-                    </Fab> */}
                   </TableCell>
                 </TableRow>
               ))}

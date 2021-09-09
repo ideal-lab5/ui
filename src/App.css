@@ -10,6 +10,7 @@
   flex-direction: column;
   font-size: calc(10px + 2vmin);
   color: white;
+  display: flow-root;
 }
 
 .App-header > button {
@@ -25,24 +26,34 @@
   color: #61dafb;
 }
 
-.login_component {
+.login-component {
+  text-align: center;
   display: inline-grid;
   padding: 20px;
   border: solid 1px black;
   background: white;
   margin:auto;
   margin-top: 100px;
+  border-radius: 15px;
 }
 
-.login_component > span {
+.login-component > span {
   padding: 10px;
 }
 
 /* TODO: move to login component when created */
 .login-form {
-  display: inline-grid;
+  margin: 10px;
 }
 
-.login-form > input {
-  margin-top: 10px;
+.login-form > :last-child {
+  margin: 20px;
+}
+
+.login-form-field {
+  padding: 10px !important;
+}
+
+.form-field-container {
+  display: grid;
 }
