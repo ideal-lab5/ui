@@ -1,10 +1,8 @@
-import { render } from '@testing-library/react';
 import React from 'react';
 import './App.css';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import IpfsComponent from './components/ipfs/ipfs.component';
-import { makeStyles } from '@material-ui/core/styles';
 
 
 class App extends React.Component {
@@ -16,6 +14,12 @@ class App extends React.Component {
       port: '9944',
       connect: false,
     }
+
+    this.handleKeyPressed = this.handleKeyPressed.bind(this);
+  }
+
+  componentDidMount() {
+    document.addEventListener('keydown', this.handleKeyPressed);
   }
 
   handleHostUpdate(e) {
@@ -34,13 +38,17 @@ class App extends React.Component {
     window.location.reload(false);
   }
 
+  handleKeyPressed(e) {
+    console.log(e);
+    if (e.key === 'Enter') {
+      this.handleConnect();
+    }
+  }
+
   render() {
     return (
       <div className="App">
         <header className="App-header">
-          <span>
-            IRIS
-          </span>
           { this.state.connect === true ? 
               <button onClick={this.handleRefresh.bind(this)}>
                 Disconnect
@@ -62,7 +70,7 @@ class App extends React.Component {
                 <TextField className="login-form-field" label="Port" variant="outlined" value={ this.state.port } onChange={ this.handlePortUpdate.bind(this) } />
               </div>
               <Button className="login-form-button" variant="contained" className="login-submit-btn" color="primary" onClick={ this.handleConnect.bind(this) } >
-                Connect  
+                Connect
               </Button>
             </form>
         </div>

@@ -41,3 +41,8 @@
 .event-logs-header {
     padding: 10px;
 }
+
+.loader-container {
+    padding: 100px;
+    text-align: center;
+}

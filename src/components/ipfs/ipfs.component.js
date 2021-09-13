@@ -10,6 +10,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
+import ClipLoader from "react-spinners/ClipLoader";
+
 // import Fab from '@material-ui/core/Fab';
 // import AddIcon from '@material-ui/icons/Add';
 
@@ -45,7 +47,9 @@ class IpfsComponent extends React.Component {
     
   async componentDidMount() {
     if (this.state.api === null) {
-      const provider = new WsProvider('ws://localhost:9944');
+      const host = this.props.host;
+      const port = this.props.port;
+      const provider = new WsProvider(`ws://${host}:${port}`);
       const api = await ApiPromise.create({
           provider,
           types: {
@@ -54,7 +58,6 @@ class IpfsComponent extends React.Component {
               DhtCommand: '_DhtCommand',
               Address: 'MultiAddress',
               LookupSource: 'MultiAddress',
-              // AccountInfo: 'AccountInfoWithDualRefCount'
           }
       });
       await api.isReady;
@@ -125,27 +128,21 @@ class IpfsComponent extends React.Component {
         const { event,  } = record;
         const eventData = event.data;
         if (event.method === 'NewCID') {
+          console.log('NewCID event: update storage');
           this.updateStorage();
-          // const sender = String(eventData[0]);
-          // const cid = this.hexToAscii(String(eventData[1]).substr(2)); 
-          // const filename= this.hexToAscii(String(eventData[2]).substr(2)); 
-          // let addEvents = this.state.newCIDEvents.concat({
-          //   account: sender,
-          //   cid: cid,
-          //   filename: filename,
-          // });
-          // this.setState({newCIDEvents: addEvents});
         } else if (event.method === 'DataReady') {
+          console.log('DataReady event: Download begin');
           const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
           const filename = this.hexToAscii(String(eventData[1]).substr(2));
           this.download(fileContent, filename);
-        } else if (event.method === 'ProvidersResult') {
-          console.log(eventData);
-          eventData.forEach(d => {
-            const cid =  this.hexToAscii(String(d[0]).substr(2));
-            console.log(this.hexToAscii(String(d)));
-          });
-        }
+        } 
+        // else if (event.method === 'ProvidersResult') {
+        //   console.log(eventData);
+        //   eventData.forEach(d => {
+        //     const cid =  this.hexToAscii(String(d[0]).substr(2));
+        //     console.log(this.hexToAscii(String(d)));
+        //   });
+        // }
       });
     });
   }
@@ -303,9 +300,8 @@ class IpfsComponent extends React.Component {
       return (
           <div className="ipfs-container">
               { this.state.isConnected === false ? 
-                <div>
-                  <span className="dot inactive"></span>
-                  Not Connected
+                <div className="loader-container">
+                  <ClipLoader loading={!this.state.isConnected} size={150} />
                 </div> :
                 <div>
                   <div className="container">
