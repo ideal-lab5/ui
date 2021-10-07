@@ -11,7 +11,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
 import ClipLoader from "react-spinners/ClipLoader";
-
+import * as IPFS from 'ipfs-core'
 // import Fab from '@material-ui/core/Fab';
 // import AddIcon from '@material-ui/icons/Add';
 
@@ -26,6 +26,7 @@ class IpfsComponent extends React.Component {
       isRunning: false,
       account: null,
       api: null,
+      ipfs: null,
       fileData: '',
       newCIDEvents: [],
       ipfsItems: [],
@@ -47,8 +48,14 @@ class IpfsComponent extends React.Component {
     
   async componentDidMount() {
     if (this.state.api === null) {
+      if (this.state.ipfs === null) {
+        const ipfs = await IPFS.create();
+        this.setState({ ipfs });
+      }
+
       const host = this.props.host;
       const port = this.props.port;
+
       const provider = new WsProvider(`ws://${host}:${port}`);
       const api = await ApiPromise.create({
           provider,
@@ -91,11 +98,20 @@ class IpfsComponent extends React.Component {
 
   async addBytes(bytesAsString, filename) {
     this.setState({ isRunning: true });
-    this.state.api.tx.templateModule.ipfsAddBytes(bytesAsString, filename).signAndSend(this.state.account, this.captureEventLogs)
+    const res = await this.state.ipfs.add(bytesAsString);
+    const id = await this.state.ipfs.id();
+    console.log(id);
+    // TODO: Hardcoding host and port for now
+    const multiAddress = ['', 'ip4', '127.0.0.1', 'tcp', '5002', 'p2p', id.id].join('/'); 
+    console.log(multiAddress);
+    this.state.api.tx.templateModule
+      .ipfsAddBytes(multiAddress, res.path, filename)
+      .signAndSend(this.state.account, this.captureEventLogs)
       .then(res => {
-        this.setState({ isRunning: false });
+        console.log(res);
       })
       .catch(err => console.error(err));
+      this.setState({ isRunning: false });
   }
 
   async catBytes(cid) {
@@ -135,14 +151,7 @@ class IpfsComponent extends React.Component {
           const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
           const filename = this.hexToAscii(String(eventData[1]).substr(2));
           this.download(fileContent, filename);
-        } 
-        // else if (event.method === 'ProvidersResult') {
-        //   console.log(eventData);
-        //   eventData.forEach(d => {
-        //     const cid =  this.hexToAscii(String(d[0]).substr(2));
-        //     console.log(this.hexToAscii(String(d)));
-        //   });
-        // }
+        }
       });
     });
   }
@@ -158,10 +167,13 @@ class IpfsComponent extends React.Component {
         const { event, phase } = record;
         const types = event.typeDef;
         this.addToEventLog(`\t${event.section}:${event.method}:: (phase=${phase.toString()})`);
-        event.data.forEach((data, index) => {
-          this.addToEventLog(`\t\t\t${types[index].type}: ${data.toString()}`);
-        });
-        this.setState({ isRunning: false });
+        if (event.data !== undefined) {
+          event.data.forEach((data, index) => {
+            if (data !== undefined) {
+              this.addToEventLog(`\t\t\t${types[index].type}: ${data.toString()}`);
+            }
+          });
+        }
       })
     }
   }
@@ -257,11 +269,6 @@ class IpfsComponent extends React.Component {
                 <TableRow key={ idx }>
                   <TableCell align="right">{ item.filename  }</TableCell>
                   <TableCell align="right">{ item.cid }</TableCell>
-                  {/* <TableCell align="right">
-                    <button onClick={this.handleFindProviders.bind(this, item.cid)}>
-                      Find Providers
-                    </button>
-                  </TableCell> */}
                   <TableCell align="right">
                     <button onClick={this.handleDownload.bind(this, item.cid)}>
                       Download

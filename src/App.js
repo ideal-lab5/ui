@@ -4,7 +4,6 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import IpfsComponent from './components/ipfs/ipfs.component';
 
-
 class App extends React.Component {
 
   constructor(props) {
@@ -39,7 +38,6 @@ class App extends React.Component {
   }
 
   handleKeyPressed(e) {
-    console.log(e);
     if (e.key === 'Enter') {
       this.handleConnect();
     }
@@ -49,6 +47,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <header className="App-header">
+          <span>IRIS</span>
           { this.state.connect === true ? 
               <button onClick={this.handleRefresh.bind(this)}>
                 Disconnect
