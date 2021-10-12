@@ -17,6 +17,8 @@ import * as IPFS from 'ipfs-core'
 
 import './ipfs.component.css';
 
+// js-ipfs config options documented here:
+// https://hub.docker.com/r/ipfs/js-ipfs/
 class IpfsComponent extends React.Component {
 
   constructor(props) {
@@ -49,8 +51,32 @@ class IpfsComponent extends React.Component {
   async componentDidMount() {
     if (this.state.api === null) {
       if (this.state.ipfs === null) {
-        const ipfs = await IPFS.create();
+        const ipfs = await IPFS.create({
+          preload: {
+            enabled: false
+          },
+          libp2p: {
+            config: {
+              peerDiscovery: {
+                enabled: false
+              }
+            }
+          },
+        });
+
+        // Addresses: {
+        //   Swarm: [
+        //     '/ip4/0.0.0.0/tcp/4002',
+        //     '/ip4/127.0.0.1/tcp/4003/ws',
+        //   ]
+        // }
+
         this.setState({ ipfs });
+        const id = await this.state.ipfs.id();
+        console.log(id);
+        const peer_info = await this.state.ipfs.config.get("Addresses.Swarm");
+        console.log("peer info");
+        console.log(peer_info);
       }
 
       const host = this.props.host;
@@ -99,10 +125,11 @@ class IpfsComponent extends React.Component {
   async addBytes(bytesAsString, filename) {
     this.setState({ isRunning: true });
     const res = await this.state.ipfs.add(bytesAsString);
+    console.log(res.path);
     const id = await this.state.ipfs.id();
-    console.log(id);
-    // TODO: Hardcoding host and port for now
-    const multiAddress = ['', 'ip4', '127.0.0.1', 'tcp', '5002', 'p2p', id.id].join('/'); 
+    console.log("The id is {}", id.id);
+    // const id = '12D3KooWMvyvKxYcy9mjbFbXcogFSCvENzQ62ogRxHKZaksFCkAp';
+    const multiAddress = ['', 'ip4', '127.0.0.1', 'tcp', '4001', 'p2p', id.id ].join('/');
     console.log(multiAddress);
     this.state.api.tx.templateModule
       .ipfsAddBytes(multiAddress, res.path, filename)
@@ -260,7 +287,6 @@ class IpfsComponent extends React.Component {
               <TableRow>
                 <TableCell align="right">Filename</TableCell>
                 <TableCell align="right">CID</TableCell>
-                {/* <TableCell align="right">Providers</TableCell> */}
                 <TableCell align="right">Download</TableCell>
               </TableRow>
             </TableHead>
