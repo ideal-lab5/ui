@@ -1,6 +1,7 @@
 import React from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { saveAs } from 'file-saver';
+import { create } from 'ipfs-http-client';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -11,7 +12,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
 import ClipLoader from "react-spinners/ClipLoader";
-import * as IPFS from 'ipfs-core'
+// import * as IPFS from 'ipfs-core'
 // import Fab from '@material-ui/core/Fab';
 // import AddIcon from '@material-ui/icons/Add';
 
@@ -34,49 +35,38 @@ class IpfsComponent extends React.Component {
       ipfsItems: [],
       connectionAliveTime: 0,
       eventLogs: [],
+      yourAssetClasses: [],
+      yourAssets: [],
+      ticketAmount: 1,
+      selected_asset_class_cid: '',
+      mint_balance: 1,
     }
     this.captureEventLogs = this.captureEventLogs.bind(this);
     this.captureFile = this.captureFile.bind(this);
     this.monitorEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
+    this.mint_tickets = this.mint_tickets.bind(this);
     // event handlers
     this.handleFileDataChange = this.handleFileDataChange.bind(this);
     this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
     this.handleFileSubmit = this.handleFileSubmit.bind(this);
     this.handleDownload = this.handleDownload.bind(this);
     // containers
-    this.newCid_container = this.ipfsItem_container.bind(this);
+    this.created_storage_assets = this.created_storage_assets.bind(this);
+    this.accessible_assets = this.accessible_assets.bind(this);
+    this.mint_ticket_container = this.mint_ticket_container.bind(this);
+    // this.newCid_container = this.ipfsItem_container.bind(this);
   }
     
   async componentDidMount() {
     if (this.state.api === null) {
       if (this.state.ipfs === null) {
-        const ipfs = await IPFS.create({
-          preload: {
-            enabled: false
-          },
-          libp2p: {
-            config: {
-              peerDiscovery: {
-                enabled: false
-              }
-            }
-          },
+        const ipfs = await create({
+          host: 'localhost',
+          port: 5001,
+          protocol: 'http',
         });
-
-        // Addresses: {
-        //   Swarm: [
-        //     '/ip4/0.0.0.0/tcp/4002',
-        //     '/ip4/127.0.0.1/tcp/4003/ws',
-        //   ]
-        // }
-
-        this.setState({ ipfs });
-        const id = await this.state.ipfs.id();
-        console.log(id);
-        const peer_info = await this.state.ipfs.config.get("Addresses.Swarm");
-        console.log("peer info");
-        console.log(peer_info);
+        this.setState({ ipfs: ipfs });
       }
 
       const host = this.props.host;
@@ -121,24 +111,46 @@ class IpfsComponent extends React.Component {
   clearEventLog() {
     this.setState({ eventLogs: [] });
   }
+  
+  /*
+    functions that call extrinsics
+  */
 
   async addBytes(bytesAsString, filename) {
     this.setState({ isRunning: true });
     const res = await this.state.ipfs.add(bytesAsString);
-    console.log(res.path);
     const id = await this.state.ipfs.id();
-    console.log("The id is {}", id.id);
-    // const id = '12D3KooWMvyvKxYcy9mjbFbXcogFSCvENzQ62ogRxHKZaksFCkAp';
-    const multiAddress = ['', 'ip4', '127.0.0.1', 'tcp', '4001', 'p2p', id.id ].join('/');
-    console.log(multiAddress);
+    // TODO: how can I inject the proper ip here? there's a lib I think
+    const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
+    const asset_id = Math.floor(Math.random()*1000);
     this.state.api.tx.templateModule
-      .ipfsAddBytes(multiAddress, res.path, filename)
+      .createStorageAsset(this.state.account.address, multiAddress, res.path, asset_id, 1)
       .signAndSend(this.state.account, this.captureEventLogs)
       .then(res => {
-        console.log(res);
+        this.updateStorage();
       })
       .catch(err => console.error(err));
       this.setState({ isRunning: false });
+  }
+
+  async mint_tickets(beneficiary, cid, amount) {
+    await this.state.api.tx.templateModule
+      .mintTickets(beneficiary, cid, amount)
+      .signAndSend(this.state.account, this.captureEventLogs)
+      .then(res => this.updateStorage())
+      .catch(err => {
+        console.log(err);
+      });
+  }
+
+  async requestData(owner, cid) {
+    await this.state.api.tx.templateModule
+      .requestData(owner, cid)
+      .signAndSend(this.state.account, this.captureEventLogs)
+      .then(res => this.updateStorage())
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   async catBytes(cid) {
@@ -149,32 +161,58 @@ class IpfsComponent extends React.Component {
     await this.state.api.tx.templateModule.ipfsDhtFindProviders(cid).signAndSend(this.state.account, this.captureEventLogs);
   }
 
+  /*
+    Functions that query substrate storage
+  */
   async updateStorage() {
-      let entries = await this.state.api.query.templateModule.fsMap.entries();
-      // assume we're synced with the entries to a certain extent, and we'll assume order is preserved
-      let newItems = [];
-      for(let i = 0; i < entries.length; i++) {
-          const entry = entries[i];
-          const cid = this.hexToAscii(String(entry[0]).substr(100));
-          const filename = this.hexToAscii(String(entry[1]).substr(2));
-          newItems.push({
-            cid: cid,
-            filename: filename,
-          });
-      }
-      this.setState({ ipfsItems: newItems });
+    await this.parse_asset_class_ownership();
+    await this.parse_assets();
   }
 
+  async parse_asset_class_ownership() {
+    // get your owned assets
+    let asset_class_entries = await this.state.api.query.templateModule.assetClassOwnership.entries(this.state.account.address);
+    let yourAssetClasses = [];
+    for (let i = 0; i < asset_class_entries.length; i++) {
+      // accountid -> cid -> assetid
+      const entry = asset_class_entries[i];
+      const cid = this.hexToAscii(String(entry[0]).substr(196));
+      yourAssetClasses.push({
+        cid: cid,
+        assetId: parseInt(String(entry[1])),
+      });
+    }
+    this.setState({ yourAssetClasses });
+  }
+
+  async parse_assets() {
+    // get your asset balances
+    let assets_entries = await this.state.api.query.templateModule.assetAccess.entries(this.state.account.address);
+    let yourAssets = [];
+    for (let i = 0; i < assets_entries.length; i++) {
+      const entry = assets_entries[i];
+      const owner = String(entry[1]);
+      const cid = this.hexToAscii(String(entry[0]).substr(196));
+      yourAssets.push({
+        owner: owner,
+        cid: cid
+      });
+    }
+    this.setState({ yourAssets });
+  }
+
+  /*
+    Event Handlers
+  */
   handleEmittedEvents() {
     this.state.api.query.system.events((events) => {
       events.forEach(record => {
         const { event,  } = record;
         const eventData = event.data;
-        if (event.method === 'NewCID') {
-          console.log('NewCID event: update storage');
+        this.updateStorage();
+        if (event.method === 'AssetClassCreated') {
           this.updateStorage();
         } else if (event.method === 'DataReady') {
-          console.log('DataReady event: Download begin');
           const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
           const filename = this.hexToAscii(String(eventData[1]).substr(2));
           this.download(fileContent, filename);
@@ -251,7 +289,7 @@ class IpfsComponent extends React.Component {
   }
 
   /*
-    Event handlers
+    User Input Event handlers
   */
   handleFileDataChange(e) {
     e.preventDefault();
@@ -275,39 +313,13 @@ class IpfsComponent extends React.Component {
     this.getProviders(cid);
   }
 
-  /*
-    Containers
-  */
-  ipfsItem_container() {
-    return (
-      <div className="container">
-        <TableContainer component={Paper}>
-          <Table size="small" aria-label="a dense table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="right">Filename</TableCell>
-                <TableCell align="right">CID</TableCell>
-                <TableCell align="right">Download</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {this.state.ipfsItems.map((item, idx) => (
-                <TableRow key={ idx }>
-                  <TableCell align="right">{ item.filename  }</TableCell>
-                  <TableCell align="right">{ item.cid }</TableCell>
-                  <TableCell align="right">
-                    <button onClick={this.handleDownload.bind(this, item.cid)}>
-                      Download
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    );
+  handleSelectStorageAsset(cid) {
+    this.setState({ selected_asset_class_cid: cid });
   }
+
+  /*
+    DOM elements
+  */
 
   eventLogs_container() {
     return (
@@ -329,6 +341,96 @@ class IpfsComponent extends React.Component {
     );
   }
 
+  created_storage_assets() {
+    return (
+      <div className="event-log_container">
+        <span className="event-logs-header">
+          Your Created Assets
+        </span>
+        <div className="event-log-item-container">
+          {this.state.yourAssetClasses.map((body, idx) => {
+            return  <span key={ idx } onClick={() => this.handleSelectStorageAsset(body.cid)}>
+                      { body.assetId } : { body.cid } 
+                    </span>
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  accessible_assets() {
+    return (
+      <div className="event-log_container">
+        <span className="event-logs-header">
+          Accessible Assets (Data)
+        </span>
+        <div className="event-log-item-container">
+          {this.state.yourAssets.map((asset_balance, idx) => {
+            return  <span key={ idx } onClick={() => this.requestData(asset_balance.owner, asset_balance.cid)}>
+                      { idx } : { asset_balance.cid }
+                    </span>
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  mint_ticket_container() {
+    if (this.state.selected_asset_class_cid === '') {
+       return (
+         <div>
+
+         </div>
+       );
+    }
+    return (
+      <div>
+        <span>Mint Tickets</span>
+        <div className="mint_container event-log-item-container">
+          { this.state.selected_asset_class_cid }
+          <button onClick={() => this.handleSelectStorageAsset('') }>
+              close
+            </button>
+          <label htmlFor="ticket-amount">
+            Number of assets to mint
+          </label>
+          <input 
+            name="ticket-amount"
+            type="number"
+            placeholder="Enter a number greater than 0"
+            value={this.state.ticketAmount}
+            onChange={this.setTicketAmount.bind(this)}
+          />
+          <label htmlFor="balance">
+            Balance to back the asset
+          </label>
+          <input
+            name="balance"
+            type="number"
+            placeholder="Enter a number greater than 0"
+            value={this.state.mint_balance}
+            onChange={this.setMintBalance.bind(this)}
+          />
+          <button onClick={() => this.mint_tickets(
+              this.state.account.address,
+              this.state.selected_asset_class_cid,
+              this.state.ticketAmount
+            )}>
+              Mint
+            </button>
+        </div>
+      </div>
+    );
+  }
+
+  setTicketAmount(e) {
+    this.setState({ticketAmount: e.target.value});
+  }
+
+  setMintBalance(e) {
+    this.setState({ mint_balance: e.target.value });
+  }
+
   render() {
       return (
           <div className="ipfs-container">
@@ -345,9 +447,13 @@ class IpfsComponent extends React.Component {
                   </div>
                   <div>
                     <input id="file-input" className="file-input" type="file" onChange={this.captureFile} value="" autoComplete={"new-password"} />
+                    { this.mint_ticket_container() }
                   </div>
-                  { this.ipfsItem_container() }
                 </div>}
+                <div>
+                  { this.created_storage_assets() }
+                  { this.accessible_assets() }
+                </div>
           </div>
       );
   }

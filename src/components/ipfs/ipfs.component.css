@@ -20,7 +20,7 @@
 }
 
 .event-log-item-container {
-    height: 220px;
+    /* height: 220px; */
     width: 60%;
     border: 1px solid #ccc;
     font: 15px Courier;
@@ -45,4 +45,20 @@
 .loader-container {
     padding: 100px;
     text-align: center;
+}
+
+.mint_container {
+    display: grid;
+}
+
+.left {
+    float: left;
+    width: 100%;
+    overflow: hidden;
+}
+
+.right {
+    float: right;
+    width: 50%;
+    overflow: hidden;
 }
