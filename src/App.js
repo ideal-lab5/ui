@@ -11,6 +11,7 @@ class App extends React.Component {
     this.state = {
       host: 'localhost',
       port: '9944',
+      address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
       connect: false,
     }
 
@@ -27,6 +28,10 @@ class App extends React.Component {
 
   handlePortUpdate(e) {
     this.setState({ port: e.target.value });
+  }
+
+  handleAddressUpdate(e) {
+    this.setState({ address: e.target.value });
   }
 
   handleConnect(e) {
@@ -56,7 +61,7 @@ class App extends React.Component {
         <div className="App-body">
           { this.state.connect === true ?
             <div>
-              <IpfsComponent host="localhost" port="9944" />
+              <IpfsComponent host={this.state.host} port={this.state.port} address={this.state.address} />
             </div>
           : 
           <div className="login-component">
@@ -65,11 +70,35 @@ class App extends React.Component {
             </span>
             <form className="login-form">
               <div className="form-field-container">
-                <TextField className="login-form-field" label="Host" variant="outlined" value={ this.state.host } onChange={ this.handleHostUpdate.bind(this)  } />
-                <TextField className="login-form-field" label="Port" variant="outlined" value={ this.state.port } onChange={ this.handlePortUpdate.bind(this) } />
+                <TextField 
+                  className="login-form-field" 
+                  label="Host" 
+                  variant="outlined" 
+                  value={ this.state.host } 
+                  onChange={ this.handleHostUpdate.bind(this)  }
+                />
+                <TextField 
+                  className="login-form-field" 
+                  label="Port" 
+                  variant="outlined" 
+                  value={ this.state.port } 
+                  onChange={ this.handlePortUpdate.bind(this) } 
+                />
+                <TextField 
+                  className="login-form-field" 
+                  label="Address" 
+                  variant="outlined"
+                  value={ this.state.address }
+                  onChange={ this.handleAddressUpdate.bind(this) }
+                />
               </div>
-              <Button className="login-form-button" variant="contained" className="login-submit-btn" color="primary" onClick={ this.handleConnect.bind(this) } >
-                Connect
+              <Button 
+                className="login-form-button" 
+                variant="contained" 
+                className="login-submit-btn"
+                color="primary" 
+                onClick={ this.handleConnect.bind(this) } 
+              > Connect 
               </Button>
             </form>
         </div>

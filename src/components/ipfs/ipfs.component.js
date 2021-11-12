@@ -10,6 +10,17 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+
+import MintModal from '../mint-modal/mint-modal.component';
+
+// import Box from '@mui/material/Box';
+// import Button from '@mui/material/Button';
+// import Typography from '@mui/material/Typography';
+// import Modal from '@mui/material/Modal';
 
 import ClipLoader from "react-spinners/ClipLoader";
 // import * as IPFS from 'ipfs-core'
@@ -27,6 +38,7 @@ class IpfsComponent extends React.Component {
     this.state = {
       isConnected: false,
       isRunning: false,
+      default_account: null,
       account: null,
       api: null,
       ipfs: null,
@@ -54,8 +66,6 @@ class IpfsComponent extends React.Component {
     // containers
     this.created_storage_assets = this.created_storage_assets.bind(this);
     this.accessible_assets = this.accessible_assets.bind(this);
-    this.mint_ticket_container = this.mint_ticket_container.bind(this);
-    // this.newCid_container = this.ipfsItem_container.bind(this);
   }
     
   async componentDidMount() {
@@ -76,19 +86,17 @@ class IpfsComponent extends React.Component {
       const api = await ApiPromise.create({
           provider,
           types: {
-              ConnectionCommand: '_ConnectionCommand',
               DataCommand: '_DataCommand',
-              DhtCommand: '_DhtCommand',
-              Address: 'MultiAddress',
-              LookupSource: 'MultiAddress',
           }
       });
       await api.isReady;
       setInterval(() => {this.updateElapsedTime(1000)}, 1000);
       this.setState({ isConnected: true });
       const keyring = new Keyring({ type: 'sr25519' });
-      const alice = keyring.addFromUri('//Alice');
-      this.setState({ api: api, account: alice });
+      // const alice = keyring.addFromUri('//Alice');
+      const alice = keyring.addFromAddress(this.props.address);
+      alice.unlock();
+      this.setState({ api: api, default_account: alice });
       this.handleEmittedEvents(api);
       this.updateStorage();
     }
@@ -111,6 +119,10 @@ class IpfsComponent extends React.Component {
   clearEventLog() {
     this.setState({ eventLogs: [] });
   }
+
+  getAccount() {
+    return this.state.account === null ? this.state.default_account : this.state.account;
+  }
   
   /*
     functions that call extrinsics
@@ -124,8 +136,8 @@ class IpfsComponent extends React.Component {
     const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
     const asset_id = Math.floor(Math.random()*1000);
     this.state.api.tx.templateModule
-      .createStorageAsset(this.state.account.address, multiAddress, res.path, asset_id, 1)
-      .signAndSend(this.state.account, this.captureEventLogs)
+      .createStorageAsset(this.getAccount().address, multiAddress, res.path, asset_id, 1)
+      .signAndSend(this.getAccount(), this.captureEventLogs)
       .then(res => {
         this.updateStorage();
       })
@@ -136,7 +148,7 @@ class IpfsComponent extends React.Component {
   async mint_tickets(beneficiary, cid, amount) {
     await this.state.api.tx.templateModule
       .mintTickets(beneficiary, cid, amount)
-      .signAndSend(this.state.account, this.captureEventLogs)
+      .signAndSend(this.getAccount(), this.captureEventLogs)
       .then(res => this.updateStorage())
       .catch(err => {
         console.log(err);
@@ -146,19 +158,11 @@ class IpfsComponent extends React.Component {
   async requestData(owner, cid) {
     await this.state.api.tx.templateModule
       .requestData(owner, cid)
-      .signAndSend(this.state.account, this.captureEventLogs)
+      .signAndSend(this.getAccount(), this.captureEventLogs)
       .then(res => this.updateStorage())
       .catch(err => {
         console.log(err);
       });
-  }
-
-  async catBytes(cid) {
-    await this.state.api.tx.templateModule.ipfsCatBytes(cid).signAndSend(this.state.account, this.captureEventLogs);
-  }
-
-  async getProviders(cid) {
-    await this.state.api.tx.templateModule.ipfsDhtFindProviders(cid).signAndSend(this.state.account, this.captureEventLogs);
   }
 
   /*
@@ -171,7 +175,7 @@ class IpfsComponent extends React.Component {
 
   async parse_asset_class_ownership() {
     // get your owned assets
-    let asset_class_entries = await this.state.api.query.templateModule.assetClassOwnership.entries(this.state.account.address);
+    let asset_class_entries = await this.state.api.query.templateModule.assetClassOwnership.entries(this.getAccount().address);
     let yourAssetClasses = [];
     for (let i = 0; i < asset_class_entries.length; i++) {
       // accountid -> cid -> assetid
@@ -187,7 +191,7 @@ class IpfsComponent extends React.Component {
 
   async parse_assets() {
     // get your asset balances
-    let assets_entries = await this.state.api.query.templateModule.assetAccess.entries(this.state.account.address);
+    let assets_entries = await this.state.api.query.templateModule.assetAccess.entries(this.getAccount().address);
     let yourAssets = [];
     for (let i = 0; i < assets_entries.length; i++) {
       const entry = assets_entries[i];
@@ -343,83 +347,67 @@ class IpfsComponent extends React.Component {
 
   created_storage_assets() {
     return (
-      <div className="event-log_container">
-        <span className="event-logs-header">
-          Your Created Assets
-        </span>
-        <div className="event-log-item-container">
-          {this.state.yourAssetClasses.map((body, idx) => {
-            return  <span key={ idx } onClick={() => this.handleSelectStorageAsset(body.cid)}>
-                      { body.assetId } : { body.cid } 
-                    </span>
-          })}
+      <div className="container">
+        <div>
+          <span>Owned Asset Classes</span>
         </div>
+        <TableContainer component={Paper}>
+          <Table size="small" aria-label="a dense table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="right">Asset Id</TableCell>
+                <TableCell align="right">CID</TableCell>
+                <TableCell align="right">Mint</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.state.yourAssetClasses.map((item, idx) => (
+                <TableRow key={ idx }>
+                  <TableCell align="right">{ item.assetId  }</TableCell>
+                  <TableCell align="right">{ item.cid }</TableCell>
+                  <TableCell align="right">
+                    <MintModal assetId={ item.assetId } cid={ item.cid } onSubmit={this.mint_tickets}  />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
     );
   }
 
   accessible_assets() {
     return (
-      <div className="event-log_container">
-        <span className="event-logs-header">
-          Accessible Assets (Data)
-        </span>
-        <div className="event-log-item-container">
-          {this.state.yourAssets.map((asset_balance, idx) => {
-            return  <span key={ idx } onClick={() => this.requestData(asset_balance.owner, asset_balance.cid)}>
-                      { idx } : { asset_balance.cid }
-                    </span>
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  mint_ticket_container() {
-    if (this.state.selected_asset_class_cid === '') {
-       return (
-         <div>
-
-         </div>
-       );
-    }
-    return (
       <div>
-        <span>Mint Tickets</span>
-        <div className="mint_container event-log-item-container">
-          { this.state.selected_asset_class_cid }
-          <button onClick={() => this.handleSelectStorageAsset('') }>
-              close
-            </button>
-          <label htmlFor="ticket-amount">
-            Number of assets to mint
-          </label>
-          <input 
-            name="ticket-amount"
-            type="number"
-            placeholder="Enter a number greater than 0"
-            value={this.state.ticketAmount}
-            onChange={this.setTicketAmount.bind(this)}
-          />
-          <label htmlFor="balance">
-            Balance to back the asset
-          </label>
-          <input
-            name="balance"
-            type="number"
-            placeholder="Enter a number greater than 0"
-            value={this.state.mint_balance}
-            onChange={this.setMintBalance.bind(this)}
-          />
-          <button onClick={() => this.mint_tickets(
-              this.state.account.address,
-              this.state.selected_asset_class_cid,
-              this.state.ticketAmount
-            )}>
-              Mint
-            </button>
+        <div>
+          <span>Owned Assets</span>
         </div>
-      </div>
+        <TableContainer component={Paper}>
+            <Table size="small" aria-label="a dense table">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="right">Owner</TableCell>
+                  <TableCell align="right">CID</TableCell>
+                  <TableCell align="right">Download</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.state.yourAssets.map((item, idx) => (
+                  <TableRow key={ idx } >
+                    <TableCell align="right">{ item.owner  }</TableCell>
+                    <TableCell align="right">{ item.cid }</TableCell>
+                    <TableCell align="right">
+                      <button onClick={() => this.requestData(item.owner, item.cid)}>
+                        Download
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
     );
   }
 
@@ -434,26 +422,41 @@ class IpfsComponent extends React.Component {
   render() {
       return (
           <div className="ipfs-container">
-              { this.state.isConnected === false ? 
-                <div className="loader-container">
-                  <ClipLoader loading={!this.state.isConnected} size={150} />
-                </div> :
-                <div>
-                  <div className="container">
-                    <div>
-                      <span className="dot active"></span> Connected { this.msToTime(this.state.connectionAliveTime) }
-                    </div>
-                   { this.eventLogs_container() }
-                  </div>
+            { this.state.isConnected === false ? 
+              <div className="loader-container">
+                <ClipLoader loading={!this.state.isConnected} size={150} />
+              </div> :
+              <div className="top-level-container">
+                <div className="container">
                   <div>
-                    <input id="file-input" className="file-input" type="file" onChange={this.captureFile} value="" autoComplete={"new-password"} />
-                    { this.mint_ticket_container() }
+                    { this.state.default_account === null ? '' : this.getAccount().address }
+                    <span className="dot active"></span> Connected { this.msToTime(this.state.connectionAliveTime) }
                   </div>
-                </div>}
+                  { this.eventLogs_container() }
+                </div>
                 <div>
+                  <input id="file-input" className="file-input" type="file" onChange={this.captureFile} value="" autoComplete={"new-password"} />
+                  <SpeedDial
+                    ariaLabel="SpeedDial basic example"
+                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                    icon={<SpeedDialIcon />}
+                  >
+                    {/* {actions.map((action) => (
+                      <SpeedDialAction
+                        key={action.name}
+                        icon={action.icon}
+                        tooltipTitle={action.name}
+                      />
+                    ))} */}
+                  </SpeedDial>
+                </div>
+              </div>}
+              <div className="assets-container">
+                <div className="assets-view-container">
                   { this.created_storage_assets() }
                   { this.accessible_assets() }
                 </div>
+              </div>
           </div>
       );
   }
