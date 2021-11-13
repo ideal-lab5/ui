@@ -5,13 +5,14 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 
 import TextField from '@mui/material/TextField';
+import AddIcon from '@mui/icons-material/Add';
 
 const style = {
   position: 'absolute',
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: 500,
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
@@ -30,14 +31,14 @@ export default function MintModal(props) {
     const [amount, setAmount] = useState('');
     const handleSetAmount = (e) => setAmount(e.target.value);
 
-    const handleOnClick = (e) => {
-      props.onSubmit(recipientAddress, props.cid, amount);
+    const handleMint = (e) => {
+      props.mint(recipientAddress, props.cid, amount);
       handleClose();
     };
 
   return (
     <div>
-      <Button onClick={handleOpen}>Go</Button>
+      <AddIcon onClick={handleOpen} />
       <Modal
         open={open}
         onClose={handleClose}
@@ -45,13 +46,13 @@ export default function MintModal(props) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <Typography id="modal-modal-title" variant="h6" component="h2">
+          <Typography id="modal-modal-title" variant="h5" component="h2">
             Mint assets 
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Asset Id: { props.assetId }
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 1 }}>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             { props.cid }
           </Typography>
           <form className="login-form">
@@ -74,7 +75,7 @@ export default function MintModal(props) {
                 variant="contained" 
                 className="login-submit-btn" 
                 color="primary"
-                onClick={ handleOnClick }
+                onClick={ handleMint }
                 > Submit
               </Button>
             </form>

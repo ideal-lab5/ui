@@ -3,29 +3,13 @@ import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { saveAs } from 'file-saver';
 import { create } from 'ipfs-http-client';
 
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
-import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
-import MintModal from '../mint-modal/mint-modal.component';
-
-// import Box from '@mui/material/Box';
-// import Button from '@mui/material/Button';
-// import Typography from '@mui/material/Typography';
-// import Modal from '@mui/material/Modal';
+import StorageAssetView from "../storage-asset/storage-asset.component";
+import LibraryView from "../library/library.component";
 
 import ClipLoader from "react-spinners/ClipLoader";
-// import * as IPFS from 'ipfs-core'
-// import Fab from '@material-ui/core/Fab';
-// import AddIcon from '@material-ui/icons/Add';
 
 import './ipfs.component.css';
 
@@ -52,20 +36,18 @@ class IpfsComponent extends React.Component {
       ticketAmount: 1,
       selected_asset_class_cid: '',
       mint_balance: 1,
+      selectedToggle: 'StorageAssetView',
     }
     this.captureEventLogs = this.captureEventLogs.bind(this);
-    this.captureFile = this.captureFile.bind(this);
     this.monitorEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
-    this.mint_tickets = this.mint_tickets.bind(this);
+    // this.mint_tickets = this.mint_tickets.bind(this);
+    // this.requestData = this.requestData.bind(this);
     // event handlers
-    this.handleFileDataChange = this.handleFileDataChange.bind(this);
-    this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
-    this.handleFileSubmit = this.handleFileSubmit.bind(this);
-    this.handleDownload = this.handleDownload.bind(this);
-    // containers
-    this.created_storage_assets = this.created_storage_assets.bind(this);
-    this.accessible_assets = this.accessible_assets.bind(this);
+    // this.handleFileDataChange = this.handleFileDataChange.bind(this);
+    // this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
+    // this.handleFileSubmit = this.handleFileSubmit.bind(this);
+    // this.handleDownload = this.handleDownload.bind(this);
   }
     
   async componentDidMount() {
@@ -93,9 +75,9 @@ class IpfsComponent extends React.Component {
       setInterval(() => {this.updateElapsedTime(1000)}, 1000);
       this.setState({ isConnected: true });
       const keyring = new Keyring({ type: 'sr25519' });
-      // const alice = keyring.addFromUri('//Alice');
-      const alice = keyring.addFromAddress(this.props.address);
-      alice.unlock();
+      const alice = keyring.addFromUri('//Alice');
+      // const alice = keyring.addFromAddress(this.props.address);
+      // alice.unlock();
       this.setState({ api: api, default_account: alice });
       this.handleEmittedEvents(api);
       this.updateStorage();
@@ -128,42 +110,42 @@ class IpfsComponent extends React.Component {
     functions that call extrinsics
   */
 
-  async addBytes(bytesAsString, filename) {
-    this.setState({ isRunning: true });
-    const res = await this.state.ipfs.add(bytesAsString);
-    const id = await this.state.ipfs.id();
-    // TODO: how can I inject the proper ip here? there's a lib I think
-    const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
-    const asset_id = Math.floor(Math.random()*1000);
-    this.state.api.tx.templateModule
-      .createStorageAsset(this.getAccount().address, multiAddress, res.path, asset_id, 1)
-      .signAndSend(this.getAccount(), this.captureEventLogs)
-      .then(res => {
-        this.updateStorage();
-      })
-      .catch(err => console.error(err));
-      this.setState({ isRunning: false });
-  }
+  // async addBytes(ipfs, api, bytesAsString) {
+  //   // this.setState({ isRunning: true });
+  //   const res = await ipfs.add(bytesAsString);
+  //   const id = await ipfs.id();
+  //   // TODO: how can I inject the proper ip here? there's a lib I think
+  //   const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
+  //   const asset_id = Math.floor(Math.random()*1000);
+  //   this.state.api.tx.templateModule
+  //     .createStorageAsset(this.getAccount().address, multiAddress, res.path, asset_id, 1)
+  //     .signAndSend(this.getAccount(), this.captureEventLogs)
+  //     .then(res => {
+  //       this.updateStorage();
+  //     })
+  //     .catch(err => console.error(err));
+  //     // this.setState({ isRunning: false });
+  // }
 
-  async mint_tickets(beneficiary, cid, amount) {
-    await this.state.api.tx.templateModule
-      .mintTickets(beneficiary, cid, amount)
-      .signAndSend(this.getAccount(), this.captureEventLogs)
-      .then(res => this.updateStorage())
-      .catch(err => {
-        console.log(err);
-      });
-  }
+  // async mint_tickets(beneficiary, cid, amount) {
+  //   await this.state.api.tx.templateModule
+  //     .mintTickets(beneficiary, cid, amount)
+  //     .signAndSend(this.getAccount(), this.captureEventLogs)
+  //     .then(res => this.updateStorage())
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // }
 
-  async requestData(owner, cid) {
-    await this.state.api.tx.templateModule
-      .requestData(owner, cid)
-      .signAndSend(this.getAccount(), this.captureEventLogs)
-      .then(res => this.updateStorage())
-      .catch(err => {
-        console.log(err);
-      });
-  }
+  // async requestData(owner, cid) {
+  //   await this.state.api.tx.templateModule
+  //     .requestData(owner, cid)
+  //     .signAndSend(this.getAccount(), this.captureEventLogs)
+  //     .then(res => this.updateStorage())
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // }
 
   /*
     Functions that query substrate storage
@@ -247,17 +229,17 @@ class IpfsComponent extends React.Component {
     }
   }
 
-  captureFile(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    const file = e.target.files[0];
-    let reader = new FileReader();
-    reader.onloadend = async () => {
-      const resultString = this.arrayBufferToString(reader.result);
-      await this.addBytes(resultString, file.name, file.size);
-    };
-    reader.readAsArrayBuffer(file);
-  }
+  // captureFile(e) {
+  //   e.stopPropagation();
+  //   e.preventDefault();
+  //   const file = e.target.files[0];
+  //   let reader = new FileReader();
+  //   reader.onloadend = async () => {
+  //     const resultString = this.arrayBufferToString(reader.result);
+  //     await this.addBytes(resultString, file.name, file.size);
+  //   };
+  //   reader.readAsArrayBuffer(file);
+  // }
 
   download(file, filename) {
     const mime = require('mime-types');
@@ -266,9 +248,9 @@ class IpfsComponent extends React.Component {
     saveAs(blob, filename);
 }
 
-  arrayBufferToString = (arrayBuffer) => {
-    return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
-  }
+  // arrayBufferToString = (arrayBuffer) => {
+  //   return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
+  // }
 
   hexToAscii(str1) {
 	  var hex  = str1.toString();
@@ -300,10 +282,10 @@ class IpfsComponent extends React.Component {
     this.setState({ fileData: e.target.value });
   }
   
-  handleAddToIpfsClick(e) {
-    e.preventDefault();
-    this.addBytes(this.state.api, this.state.fileData);
-  }
+  // handleAddToIpfsClick(e) {
+  //   e.preventDefault();
+  //   this.addBytes(this.state.api, this.state.fileData);
+  // }
 
   handleDownload(cid) {
     this.catBytes(cid);
@@ -319,6 +301,11 @@ class IpfsComponent extends React.Component {
 
   handleSelectStorageAsset(cid) {
     this.setState({ selected_asset_class_cid: cid });
+  }
+
+  updateToggle(value) {
+    this.setState({ selectedToggle: value });
+    // this.forceUpdate();
   }
 
   /*
@@ -344,118 +331,56 @@ class IpfsComponent extends React.Component {
       </div>
     );
   }
-
-  created_storage_assets() {
-    return (
-      <div className="container">
-        <div>
-          <span>Owned Asset Classes</span>
-        </div>
-        <TableContainer component={Paper}>
-          <Table size="small" aria-label="a dense table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="right">Asset Id</TableCell>
-                <TableCell align="right">CID</TableCell>
-                <TableCell align="right">Mint</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {this.state.yourAssetClasses.map((item, idx) => (
-                <TableRow key={ idx }>
-                  <TableCell align="right">{ item.assetId  }</TableCell>
-                  <TableCell align="right">{ item.cid }</TableCell>
-                  <TableCell align="right">
-                    <MintModal assetId={ item.assetId } cid={ item.cid } onSubmit={this.mint_tickets}  />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    );
-  }
-
-  accessible_assets() {
-    return (
-      <div>
-        <div>
-          <span>Owned Assets</span>
-        </div>
-        <TableContainer component={Paper}>
-            <Table size="small" aria-label="a dense table">
-              <TableHead>
-                <TableRow>
-                  <TableCell align="right">Owner</TableCell>
-                  <TableCell align="right">CID</TableCell>
-                  <TableCell align="right">Download</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.state.yourAssets.map((item, idx) => (
-                  <TableRow key={ idx } >
-                    <TableCell align="right">{ item.owner  }</TableCell>
-                    <TableCell align="right">{ item.cid }</TableCell>
-                    <TableCell align="right">
-                      <button onClick={() => this.requestData(item.owner, item.cid)}>
-                        Download
-                      </button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </div>
-    );
-  }
-
-  setTicketAmount(e) {
-    this.setState({ticketAmount: e.target.value});
-  }
-
-  setMintBalance(e) {
-    this.setState({ mint_balance: e.target.value });
-  }
-
+  
   render() {
       return (
           <div className="ipfs-container">
+            <div className="sidebar">
+              <div className="sidebar-item" onClick={() => this.updateToggle('StorageAssetView')}>
+                Storage Assets <InsertDriveFileIcon />
+              </div>
+              <div className="sidebar-item" onClick={() => this.updateToggle('LibraryView')}>
+                Library <LibraryBooksIcon />
+              </div>
+            </div>
+            <div className="content-container">
             { this.state.isConnected === false ? 
               <div className="loader-container">
                 <ClipLoader loading={!this.state.isConnected} size={150} />
               </div> :
               <div className="top-level-container">
                 <div className="container">
-                  <div>
+                  <div className="session-info-container">
                     { this.state.default_account === null ? '' : this.getAccount().address }
-                    <span className="dot active"></span> Connected { this.msToTime(this.state.connectionAliveTime) }
+                    <span 
+                      className="dot active">
+                    </span> 
+                    Connected 
+                    { this.msToTime(this.state.connectionAliveTime) }
                   </div>
                   { this.eventLogs_container() }
-                </div>
-                <div>
-                  <input id="file-input" className="file-input" type="file" onChange={this.captureFile} value="" autoComplete={"new-password"} />
-                  <SpeedDial
-                    ariaLabel="SpeedDial basic example"
-                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
-                    icon={<SpeedDialIcon />}
-                  >
-                    {/* {actions.map((action) => (
-                      <SpeedDialAction
-                        key={action.name}
-                        icon={action.icon}
-                        tooltipTitle={action.name}
-                      />
-                    ))} */}
-                  </SpeedDial>
                 </div>
               </div>}
               <div className="assets-container">
                 <div className="assets-view-container">
-                  { this.created_storage_assets() }
-                  { this.accessible_assets() }
+                  { this.state.selectedToggle === 'StorageAssetView' ? 
+                    <StorageAssetView
+                      account={ this.getAccount() }
+                      storageAssetClasses={ this.state.yourAssetClasses }
+                      mint={ this.mint_tickets }
+                      api={ this.state.api }
+                      ipfs={ this.state.ipfs }
+                      eventLogHandler={ this.handleEmittedEvents }
+                    /> :
+                    <LibraryView
+                      account={ this.getAccount() }
+                      library={ this.state.yourAssets }
+                      requestData={ this.requestData }
+                      api={ this.state.api }
+                    />
+                  }
                 </div>
+              </div>
               </div>
           </div>
       );
