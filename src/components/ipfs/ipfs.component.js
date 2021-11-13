@@ -1,19 +1,15 @@
 import React from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { saveAs } from 'file-saver';
+import { create } from 'ipfs-http-client';
 
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+
+import StorageAssetView from "../storage-asset/storage-asset.component";
+import LibraryView from "../library/library.component";
 
 import ClipLoader from "react-spinners/ClipLoader";
-import * as IPFS from 'ipfs-core'
-// import Fab from '@material-ui/core/Fab';
-// import AddIcon from '@material-ui/icons/Add';
 
 import './ipfs.component.css';
 
@@ -26,6 +22,7 @@ class IpfsComponent extends React.Component {
     this.state = {
       isConnected: false,
       isRunning: false,
+      default_account: null,
       account: null,
       api: null,
       ipfs: null,
@@ -34,49 +31,34 @@ class IpfsComponent extends React.Component {
       ipfsItems: [],
       connectionAliveTime: 0,
       eventLogs: [],
+      yourAssetClasses: [],
+      yourAssets: [],
+      ticketAmount: 1,
+      selected_asset_class_cid: '',
+      mint_balance: 1,
+      selectedToggle: 'StorageAssetView',
     }
     this.captureEventLogs = this.captureEventLogs.bind(this);
-    this.captureFile = this.captureFile.bind(this);
     this.monitorEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
+    // this.mint_tickets = this.mint_tickets.bind(this);
+    // this.requestData = this.requestData.bind(this);
     // event handlers
-    this.handleFileDataChange = this.handleFileDataChange.bind(this);
-    this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
-    this.handleFileSubmit = this.handleFileSubmit.bind(this);
-    this.handleDownload = this.handleDownload.bind(this);
-    // containers
-    this.newCid_container = this.ipfsItem_container.bind(this);
+    // this.handleFileDataChange = this.handleFileDataChange.bind(this);
+    // this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
+    // this.handleFileSubmit = this.handleFileSubmit.bind(this);
+    // this.handleDownload = this.handleDownload.bind(this);
   }
     
   async componentDidMount() {
     if (this.state.api === null) {
       if (this.state.ipfs === null) {
-        const ipfs = await IPFS.create({
-          preload: {
-            enabled: false
-          },
-          libp2p: {
-            config: {
-              peerDiscovery: {
-                enabled: false
-              }
-            }
-          },
+        const ipfs = await create({
+          host: 'localhost',
+          port: 5001,
+          protocol: 'http',
         });
-
-        // Addresses: {
-        //   Swarm: [
-        //     '/ip4/0.0.0.0/tcp/4002',
-        //     '/ip4/127.0.0.1/tcp/4003/ws',
-        //   ]
-        // }
-
-        this.setState({ ipfs });
-        const id = await this.state.ipfs.id();
-        console.log(id);
-        const peer_info = await this.state.ipfs.config.get("Addresses.Swarm");
-        console.log("peer info");
-        console.log(peer_info);
+        this.setState({ ipfs: ipfs });
       }
 
       const host = this.props.host;
@@ -86,11 +68,7 @@ class IpfsComponent extends React.Component {
       const api = await ApiPromise.create({
           provider,
           types: {
-              ConnectionCommand: '_ConnectionCommand',
               DataCommand: '_DataCommand',
-              DhtCommand: '_DhtCommand',
-              Address: 'MultiAddress',
-              LookupSource: 'MultiAddress',
           }
       });
       await api.isReady;
@@ -98,7 +76,9 @@ class IpfsComponent extends React.Component {
       this.setState({ isConnected: true });
       const keyring = new Keyring({ type: 'sr25519' });
       const alice = keyring.addFromUri('//Alice');
-      this.setState({ api: api, account: alice });
+      // const alice = keyring.addFromAddress(this.props.address);
+      // alice.unlock();
+      this.setState({ api: api, default_account: alice });
       this.handleEmittedEvents(api);
       this.updateStorage();
     }
@@ -122,59 +102,103 @@ class IpfsComponent extends React.Component {
     this.setState({ eventLogs: [] });
   }
 
-  async addBytes(bytesAsString, filename) {
-    this.setState({ isRunning: true });
-    const res = await this.state.ipfs.add(bytesAsString);
-    console.log(res.path);
-    const id = await this.state.ipfs.id();
-    console.log("The id is {}", id.id);
-    // const id = '12D3KooWMvyvKxYcy9mjbFbXcogFSCvENzQ62ogRxHKZaksFCkAp';
-    const multiAddress = ['', 'ip4', '127.0.0.1', 'tcp', '4001', 'p2p', id.id ].join('/');
-    console.log(multiAddress);
-    this.state.api.tx.templateModule
-      .ipfsAddBytes(multiAddress, res.path, filename)
-      .signAndSend(this.state.account, this.captureEventLogs)
-      .then(res => {
-        console.log(res);
-      })
-      .catch(err => console.error(err));
-      this.setState({ isRunning: false });
+  getAccount() {
+    return this.state.account === null ? this.state.default_account : this.state.account;
   }
+  
+  /*
+    functions that call extrinsics
+  */
 
-  async catBytes(cid) {
-    await this.state.api.tx.templateModule.ipfsCatBytes(cid).signAndSend(this.state.account, this.captureEventLogs);
-  }
+  // async addBytes(ipfs, api, bytesAsString) {
+  //   // this.setState({ isRunning: true });
+  //   const res = await ipfs.add(bytesAsString);
+  //   const id = await ipfs.id();
+  //   // TODO: how can I inject the proper ip here? there's a lib I think
+  //   const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
+  //   const asset_id = Math.floor(Math.random()*1000);
+  //   this.state.api.tx.templateModule
+  //     .createStorageAsset(this.getAccount().address, multiAddress, res.path, asset_id, 1)
+  //     .signAndSend(this.getAccount(), this.captureEventLogs)
+  //     .then(res => {
+  //       this.updateStorage();
+  //     })
+  //     .catch(err => console.error(err));
+  //     // this.setState({ isRunning: false });
+  // }
 
-  async getProviders(cid) {
-    await this.state.api.tx.templateModule.ipfsDhtFindProviders(cid).signAndSend(this.state.account, this.captureEventLogs);
-  }
+  // async mint_tickets(beneficiary, cid, amount) {
+  //   await this.state.api.tx.templateModule
+  //     .mintTickets(beneficiary, cid, amount)
+  //     .signAndSend(this.getAccount(), this.captureEventLogs)
+  //     .then(res => this.updateStorage())
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // }
 
+  // async requestData(owner, cid) {
+  //   await this.state.api.tx.templateModule
+  //     .requestData(owner, cid)
+  //     .signAndSend(this.getAccount(), this.captureEventLogs)
+  //     .then(res => this.updateStorage())
+  //     .catch(err => {
+  //       console.log(err);
+  //     });
+  // }
+
+  /*
+    Functions that query substrate storage
+  */
   async updateStorage() {
-      let entries = await this.state.api.query.templateModule.fsMap.entries();
-      // assume we're synced with the entries to a certain extent, and we'll assume order is preserved
-      let newItems = [];
-      for(let i = 0; i < entries.length; i++) {
-          const entry = entries[i];
-          const cid = this.hexToAscii(String(entry[0]).substr(100));
-          const filename = this.hexToAscii(String(entry[1]).substr(2));
-          newItems.push({
-            cid: cid,
-            filename: filename,
-          });
-      }
-      this.setState({ ipfsItems: newItems });
+    await this.parse_asset_class_ownership();
+    await this.parse_assets();
   }
 
+  async parse_asset_class_ownership() {
+    // get your owned assets
+    let asset_class_entries = await this.state.api.query.templateModule.assetClassOwnership.entries(this.getAccount().address);
+    let yourAssetClasses = [];
+    for (let i = 0; i < asset_class_entries.length; i++) {
+      // accountid -> cid -> assetid
+      const entry = asset_class_entries[i];
+      const cid = this.hexToAscii(String(entry[0]).substr(196));
+      yourAssetClasses.push({
+        cid: cid,
+        assetId: parseInt(String(entry[1])),
+      });
+    }
+    this.setState({ yourAssetClasses });
+  }
+
+  async parse_assets() {
+    // get your asset balances
+    let assets_entries = await this.state.api.query.templateModule.assetAccess.entries(this.getAccount().address);
+    let yourAssets = [];
+    for (let i = 0; i < assets_entries.length; i++) {
+      const entry = assets_entries[i];
+      const owner = String(entry[1]);
+      const cid = this.hexToAscii(String(entry[0]).substr(196));
+      yourAssets.push({
+        owner: owner,
+        cid: cid
+      });
+    }
+    this.setState({ yourAssets });
+  }
+
+  /*
+    Event Handlers
+  */
   handleEmittedEvents() {
     this.state.api.query.system.events((events) => {
       events.forEach(record => {
         const { event,  } = record;
         const eventData = event.data;
-        if (event.method === 'NewCID') {
-          console.log('NewCID event: update storage');
+        this.updateStorage();
+        if (event.method === 'AssetClassCreated') {
           this.updateStorage();
         } else if (event.method === 'DataReady') {
-          console.log('DataReady event: Download begin');
           const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
           const filename = this.hexToAscii(String(eventData[1]).substr(2));
           this.download(fileContent, filename);
@@ -205,17 +229,17 @@ class IpfsComponent extends React.Component {
     }
   }
 
-  captureFile(e) {
-    e.stopPropagation();
-    e.preventDefault();
-    const file = e.target.files[0];
-    let reader = new FileReader();
-    reader.onloadend = async () => {
-      const resultString = this.arrayBufferToString(reader.result);
-      await this.addBytes(resultString, file.name, file.size);
-    };
-    reader.readAsArrayBuffer(file);
-  }
+  // captureFile(e) {
+  //   e.stopPropagation();
+  //   e.preventDefault();
+  //   const file = e.target.files[0];
+  //   let reader = new FileReader();
+  //   reader.onloadend = async () => {
+  //     const resultString = this.arrayBufferToString(reader.result);
+  //     await this.addBytes(resultString, file.name, file.size);
+  //   };
+  //   reader.readAsArrayBuffer(file);
+  // }
 
   download(file, filename) {
     const mime = require('mime-types');
@@ -224,9 +248,9 @@ class IpfsComponent extends React.Component {
     saveAs(blob, filename);
 }
 
-  arrayBufferToString = (arrayBuffer) => {
-    return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
-  }
+  // arrayBufferToString = (arrayBuffer) => {
+  //   return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
+  // }
 
   hexToAscii(str1) {
 	  var hex  = str1.toString();
@@ -251,17 +275,17 @@ class IpfsComponent extends React.Component {
   }
 
   /*
-    Event handlers
+    User Input Event handlers
   */
   handleFileDataChange(e) {
     e.preventDefault();
     this.setState({ fileData: e.target.value });
   }
   
-  handleAddToIpfsClick(e) {
-    e.preventDefault();
-    this.addBytes(this.state.api, this.state.fileData);
-  }
+  // handleAddToIpfsClick(e) {
+  //   e.preventDefault();
+  //   this.addBytes(this.state.api, this.state.fileData);
+  // }
 
   handleDownload(cid) {
     this.catBytes(cid);
@@ -275,39 +299,18 @@ class IpfsComponent extends React.Component {
     this.getProviders(cid);
   }
 
-  /*
-    Containers
-  */
-  ipfsItem_container() {
-    return (
-      <div className="container">
-        <TableContainer component={Paper}>
-          <Table size="small" aria-label="a dense table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="right">Filename</TableCell>
-                <TableCell align="right">CID</TableCell>
-                <TableCell align="right">Download</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {this.state.ipfsItems.map((item, idx) => (
-                <TableRow key={ idx }>
-                  <TableCell align="right">{ item.filename  }</TableCell>
-                  <TableCell align="right">{ item.cid }</TableCell>
-                  <TableCell align="right">
-                    <button onClick={this.handleDownload.bind(this, item.cid)}>
-                      Download
-                    </button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    );
+  handleSelectStorageAsset(cid) {
+    this.setState({ selected_asset_class_cid: cid });
   }
+
+  updateToggle(value) {
+    this.setState({ selectedToggle: value });
+    // this.forceUpdate();
+  }
+
+  /*
+    DOM elements
+  */
 
   eventLogs_container() {
     return (
@@ -328,26 +331,57 @@ class IpfsComponent extends React.Component {
       </div>
     );
   }
-
+  
   render() {
       return (
           <div className="ipfs-container">
-              { this.state.isConnected === false ? 
-                <div className="loader-container">
-                  <ClipLoader loading={!this.state.isConnected} size={150} />
-                </div> :
-                <div>
-                  <div className="container">
-                    <div>
-                      <span className="dot active"></span> Connected { this.msToTime(this.state.connectionAliveTime) }
-                    </div>
-                   { this.eventLogs_container() }
+            <div className="sidebar">
+              <div className="sidebar-item" onClick={() => this.updateToggle('StorageAssetView')}>
+                Storage Assets <InsertDriveFileIcon />
+              </div>
+              <div className="sidebar-item" onClick={() => this.updateToggle('LibraryView')}>
+                Library <LibraryBooksIcon />
+              </div>
+            </div>
+            <div className="content-container">
+            { this.state.isConnected === false ? 
+              <div className="loader-container">
+                <ClipLoader loading={!this.state.isConnected} size={150} />
+              </div> :
+              <div className="top-level-container">
+                <div className="container">
+                  <div className="session-info-container">
+                    { this.state.default_account === null ? '' : this.getAccount().address }
+                    <span 
+                      className="dot active">
+                    </span> 
+                    Connected 
+                    { this.msToTime(this.state.connectionAliveTime) }
                   </div>
-                  <div>
-                    <input id="file-input" className="file-input" type="file" onChange={this.captureFile} value="" autoComplete={"new-password"} />
-                  </div>
-                  { this.ipfsItem_container() }
-                </div>}
+                  { this.eventLogs_container() }
+                </div>
+              </div>}
+              <div className="assets-container">
+                <div className="assets-view-container">
+                  { this.state.selectedToggle === 'StorageAssetView' ? 
+                    <StorageAssetView
+                      account={ this.getAccount() }
+                      storageAssetClasses={ this.state.yourAssetClasses }
+                      mint={ this.mint_tickets }
+                      api={ this.state.api }
+                      ipfs={ this.state.ipfs }
+                      eventLogHandler={ this.handleEmittedEvents }
+                    /> :
+                    <LibraryView
+                      account={ this.getAccount() }
+                      library={ this.state.yourAssets }
+                      requestData={ this.requestData }
+                      api={ this.state.api }
+                    />
+                  }
+                </div>
+              </div>
+              </div>
           </div>
       );
   }
