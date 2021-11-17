@@ -157,7 +157,7 @@ class IpfsComponent extends React.Component {
 
   async parse_asset_class_ownership() {
     // get your owned assets
-    let asset_class_entries = await this.state.api.query.templateModule.assetClassOwnership.entries(this.getAccount().address);
+    let asset_class_entries = await this.state.api.query.iris.assetClassOwnership.entries(this.getAccount().address);
     let yourAssetClasses = [];
     for (let i = 0; i < asset_class_entries.length; i++) {
       // accountid -> cid -> assetid
@@ -173,7 +173,7 @@ class IpfsComponent extends React.Component {
 
   async parse_assets() {
     // get your asset balances
-    let assets_entries = await this.state.api.query.templateModule.assetAccess.entries(this.getAccount().address);
+    let assets_entries = await this.state.api.query.iris.assetAccess.entries(this.getAccount().address);
     let yourAssets = [];
     for (let i = 0; i < assets_entries.length; i++) {
       const entry = assets_entries[i];
