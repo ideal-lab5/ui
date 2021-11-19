@@ -42,7 +42,7 @@ class IpfsComponent extends React.Component {
     this.monitorEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
     // this.mint_tickets = this.mint_tickets.bind(this);
-    // this.requestData = this.requestData.bind(this);
+    this.requestData = this.requestData.bind(this);
     // event handlers
     // this.handleFileDataChange = this.handleFileDataChange.bind(this);
     // this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
@@ -137,15 +137,15 @@ class IpfsComponent extends React.Component {
   //     });
   // }
 
-  // async requestData(owner, cid) {
-  //   await this.state.api.tx.templateModule
-  //     .requestData(owner, cid)
-  //     .signAndSend(this.getAccount(), this.captureEventLogs)
-  //     .then(res => this.updateStorage())
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  // }
+  async requestData(owner, cid) {
+    await this.state.api.tx.iris
+      .requestData(owner, cid)
+      .signAndSend(this.getAccount(), this.captureEventLogs)
+      .then(res => this.updateStorage())
+      .catch(err => {
+        console.log(err);
+      });
+  }
 
   /*
     Functions that query substrate storage
