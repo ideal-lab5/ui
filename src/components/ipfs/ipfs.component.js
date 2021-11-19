@@ -43,6 +43,7 @@ class IpfsComponent extends React.Component {
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
     // this.mint_tickets = this.mint_tickets.bind(this);
     this.requestData = this.requestData.bind(this);
+    this.retrieveBytes = this.retrieveBytes.bind(this);
     // event handlers
     // this.handleFileDataChange = this.handleFileDataChange.bind(this);
     // this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
@@ -69,6 +70,20 @@ class IpfsComponent extends React.Component {
           provider,
           types: {
               DataCommand: '_DataCommand',
+          },
+          rpc: {
+            iris: {
+              retrieveBytes: {
+                description: 'retrieve bytes from iris',
+                params: [
+                  {
+                    name: 'signed_message',
+                    type: 'Bytes'
+                  }
+                ],
+                type: 'Bytes'
+              }
+            }
           }
       });
       await api.isReady;
@@ -145,6 +160,11 @@ class IpfsComponent extends React.Component {
       .catch(err => {
         console.log(err);
       });
+  }
+
+  async retrieveBytes(cid) {
+    let res = await this.state.api.rpc.iris.retrieveBytes(cid);
+    this.download(res, cid);
   }
 
   /*
@@ -376,6 +396,7 @@ class IpfsComponent extends React.Component {
                       account={ this.getAccount() }
                       library={ this.state.yourAssets }
                       requestData={ this.requestData }
+                      retrieveBytes={ this.retrieveBytes }
                       api={ this.state.api }
                     />
                   }
