@@ -16,8 +16,8 @@ export default function LibraryView(props) {
         );
     };
 
-    const handleRpcCall = (cid) => {
-      props.retrieveBytes(cid);
+    const handleRpcCall = (publicKey, signature, mesage) => {
+      props.retrieveBytes(publicKey, signature, mesage);
     }
 
     return (
@@ -43,7 +43,7 @@ export default function LibraryView(props) {
                         <button onClick={() => handleRequestData(item.owner, item.cid)}>
                           Request
                         </button>
-                        <button onClick={() => handleRpcCall(item.cid)}>
+                        <button onClick={() => handleRpcCall('', '', item.cid)}>
                           Download
                         </button>
                       </TableCell>

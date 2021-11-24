@@ -77,7 +77,15 @@ class IpfsComponent extends React.Component {
                 description: 'retrieve bytes from iris',
                 params: [
                   {
-                    name: 'signed_message',
+                    name: 'public_key',
+                    type: 'Bytes'
+                  },
+                  {
+                    name: 'signature',
+                    type: 'Bytes'
+                  },
+                  {
+                    name: 'message',
                     type: 'Bytes'
                   }
                 ],
@@ -162,9 +170,9 @@ class IpfsComponent extends React.Component {
       });
   }
 
-  async retrieveBytes(cid) {
-    let res = await this.state.api.rpc.iris.retrieveBytes(cid);
-    this.download(res, cid);
+  async retrieveBytes(publicKey, signature, message) {
+    let res = await this.state.api.rpc.iris.retrieveBytes(publicKey, signature, message);
+    this.download(res, message);
   }
 
   /*
