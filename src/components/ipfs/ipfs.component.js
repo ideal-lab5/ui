@@ -42,7 +42,8 @@ class IpfsComponent extends React.Component {
     this.monitorEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
     // this.mint_tickets = this.mint_tickets.bind(this);
-    // this.requestData = this.requestData.bind(this);
+    this.requestData = this.requestData.bind(this);
+    this.retrieveBytes = this.retrieveBytes.bind(this);
     // event handlers
     // this.handleFileDataChange = this.handleFileDataChange.bind(this);
     // this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
@@ -69,16 +70,36 @@ class IpfsComponent extends React.Component {
           provider,
           types: {
               DataCommand: '_DataCommand',
+          },
+          rpc: {
+            iris: {
+              retrieveBytes: {
+                description: 'retrieve bytes from iris',
+                params: [
+                  {
+                    name: 'public_key',
+                    type: 'Bytes'
+                  },
+                  {
+                    name: 'signature',
+                    type: 'Bytes'
+                  },
+                  {
+                    name: 'message',
+                    type: 'Bytes'
+                  }
+                ],
+                type: 'Bytes'
+              }
+            }
           }
       });
       await api.isReady;
       setInterval(() => {this.updateElapsedTime(1000)}, 1000);
       this.setState({ isConnected: true });
       const keyring = new Keyring({ type: 'sr25519' });
-      const alice = keyring.addFromUri('//Alice');
-      // const alice = keyring.addFromAddress(this.props.address);
-      // alice.unlock();
-      this.setState({ api: api, default_account: alice });
+      const account = keyring.addFromUri('//' + this.props.address);
+      this.setState({ api: api, default_account: account });
       this.handleEmittedEvents(api);
       this.updateStorage();
     }
@@ -105,47 +126,21 @@ class IpfsComponent extends React.Component {
   getAccount() {
     return this.state.account === null ? this.state.default_account : this.state.account;
   }
-  
-  /*
-    functions that call extrinsics
-  */
 
-  // async addBytes(ipfs, api, bytesAsString) {
-  //   // this.setState({ isRunning: true });
-  //   const res = await ipfs.add(bytesAsString);
-  //   const id = await ipfs.id();
-  //   // TODO: how can I inject the proper ip here? there's a lib I think
-  //   const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
-  //   const asset_id = Math.floor(Math.random()*1000);
-  //   this.state.api.tx.templateModule
-  //     .createStorageAsset(this.getAccount().address, multiAddress, res.path, asset_id, 1)
-  //     .signAndSend(this.getAccount(), this.captureEventLogs)
-  //     .then(res => {
-  //       this.updateStorage();
-  //     })
-  //     .catch(err => console.error(err));
-  //     // this.setState({ isRunning: false });
-  // }
+  async requestData(owner, cid) {
+    await this.state.api.tx.iris
+      .requestData(owner, cid)
+      .signAndSend(this.getAccount(), this.captureEventLogs)
+      .then(res => this.updateStorage())
+      .catch(err => {
+        console.log(err);
+      });
+  }
 
-  // async mint_tickets(beneficiary, cid, amount) {
-  //   await this.state.api.tx.templateModule
-  //     .mintTickets(beneficiary, cid, amount)
-  //     .signAndSend(this.getAccount(), this.captureEventLogs)
-  //     .then(res => this.updateStorage())
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  // }
-
-  // async requestData(owner, cid) {
-  //   await this.state.api.tx.templateModule
-  //     .requestData(owner, cid)
-  //     .signAndSend(this.getAccount(), this.captureEventLogs)
-  //     .then(res => this.updateStorage())
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  // }
+  async retrieveBytes(publicKey, signature, message) {
+    let res = await this.state.api.rpc.iris.retrieveBytes(publicKey, signature, message);
+    this.download(res, message);
+  }
 
   /*
     Functions that query substrate storage
@@ -156,11 +151,9 @@ class IpfsComponent extends React.Component {
   }
 
   async parse_asset_class_ownership() {
-    // get your owned assets
-    let asset_class_entries = await this.state.api.query.templateModule.assetClassOwnership.entries(this.getAccount().address);
+    let asset_class_entries = await this.state.api.query.iris.assetClassOwnership.entries(this.getAccount().address);
     let yourAssetClasses = [];
     for (let i = 0; i < asset_class_entries.length; i++) {
-      // accountid -> cid -> assetid
       const entry = asset_class_entries[i];
       const cid = this.hexToAscii(String(entry[0]).substr(196));
       yourAssetClasses.push({
@@ -173,7 +166,7 @@ class IpfsComponent extends React.Component {
 
   async parse_assets() {
     // get your asset balances
-    let assets_entries = await this.state.api.query.templateModule.assetAccess.entries(this.getAccount().address);
+    let assets_entries = await this.state.api.query.iris.assetAccess.entries(this.getAccount().address);
     let yourAssets = [];
     for (let i = 0; i < assets_entries.length; i++) {
       const entry = assets_entries[i];
@@ -376,6 +369,7 @@ class IpfsComponent extends React.Component {
                       account={ this.getAccount() }
                       library={ this.state.yourAssets }
                       requestData={ this.requestData }
+                      retrieveBytes={ this.retrieveBytes }
                       api={ this.state.api }
                     />
                   }
