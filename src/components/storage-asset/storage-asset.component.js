@@ -33,23 +33,24 @@ export default function StorageAssetView(props) {
       let reader = new FileReader();
       reader.onloadend = async () => {
         const resultString = arrayBufferToString(reader.result);
-        await handleAddBytes(resultString);
+        await handleAddBytes(resultString, file.name);
       };
       reader.readAsArrayBuffer(file);
     }
   
-    const handleAddBytes = async (bytes) => {
+    const handleAddBytes = async (bytes, name) => {
       const res = await props.ipfs.add(bytes);
       const id = await props.ipfs.id();
       // TODO: how can I inject the proper ip here? there's a lib I think
-      const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
+      const multiAddress = ['', 'ip4', '10.0.0.9', 'tcp', '4001', 'p2p', id.id ].join('/');
       const asset_id = Math.floor(Math.random()*1000);
       await createStorageAsset(
         props.api, 
         props.account,
         multiAddress, 
-        res.path, 
-        asset_id, 
+        res.path,
+        name,
+        asset_id,
         1,
         props.handleEventLogs, 
         res => console.log(JSON.stringify(res)), 

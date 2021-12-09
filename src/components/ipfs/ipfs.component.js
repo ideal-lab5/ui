@@ -98,10 +98,8 @@ class IpfsComponent extends React.Component {
       setInterval(() => {this.updateElapsedTime(1000)}, 1000);
       this.setState({ isConnected: true });
       const keyring = new Keyring({ type: 'sr25519' });
-      const alice = keyring.addFromUri('//Alice');
-      // const alice = keyring.addFromAddress(this.props.address);
-      // alice.unlock();
-      this.setState({ api: api, default_account: alice });
+      const account = keyring.addFromUri('//' + this.props.address);
+      this.setState({ api: api, default_account: account });
       this.handleEmittedEvents(api);
       this.updateStorage();
     }
@@ -128,37 +126,6 @@ class IpfsComponent extends React.Component {
   getAccount() {
     return this.state.account === null ? this.state.default_account : this.state.account;
   }
-  
-  /*
-    functions that call extrinsics
-  */
-
-  // async addBytes(ipfs, api, bytesAsString) {
-  //   // this.setState({ isRunning: true });
-  //   const res = await ipfs.add(bytesAsString);
-  //   const id = await ipfs.id();
-  //   // TODO: how can I inject the proper ip here? there's a lib I think
-  //   const multiAddress = ['', 'ip4', '192.168.1.170', 'tcp', '4001', 'p2p', id.id ].join('/');
-  //   const asset_id = Math.floor(Math.random()*1000);
-  //   this.state.api.tx.templateModule
-  //     .createStorageAsset(this.getAccount().address, multiAddress, res.path, asset_id, 1)
-  //     .signAndSend(this.getAccount(), this.captureEventLogs)
-  //     .then(res => {
-  //       this.updateStorage();
-  //     })
-  //     .catch(err => console.error(err));
-  //     // this.setState({ isRunning: false });
-  // }
-
-  // async mint_tickets(beneficiary, cid, amount) {
-  //   await this.state.api.tx.templateModule
-  //     .mintTickets(beneficiary, cid, amount)
-  //     .signAndSend(this.getAccount(), this.captureEventLogs)
-  //     .then(res => this.updateStorage())
-  //     .catch(err => {
-  //       console.log(err);
-  //     });
-  // }
 
   async requestData(owner, cid) {
     await this.state.api.tx.iris
@@ -184,11 +151,9 @@ class IpfsComponent extends React.Component {
   }
 
   async parse_asset_class_ownership() {
-    // get your owned assets
     let asset_class_entries = await this.state.api.query.iris.assetClassOwnership.entries(this.getAccount().address);
     let yourAssetClasses = [];
     for (let i = 0; i < asset_class_entries.length; i++) {
-      // accountid -> cid -> assetid
       const entry = asset_class_entries[i];
       const cid = this.hexToAscii(String(entry[0]).substr(196));
       yourAssetClasses.push({
