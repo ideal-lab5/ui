@@ -11,7 +11,7 @@ class App extends React.Component {
     this.state = {
       host: 'localhost',
       port: '9944',
-      address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      address: 'Alice',
       connect: false,
     }
 

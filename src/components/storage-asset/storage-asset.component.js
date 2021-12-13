@@ -7,8 +7,6 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
-import { saveAs } from 'file-saver';
-
 import MintModal from '../mint-modal/mint-modal.component';
 import { createStorageAsset, mintTickets } from '../../services/iris.service';
 
@@ -40,21 +38,26 @@ export default function StorageAssetView(props) {
   
     const handleAddBytes = async (bytes, name) => {
       const res = await props.ipfs.add(bytes);
-      const id = await props.ipfs.id();
-      // TODO: how can I inject the proper ip here? there's a lib I think
-      const multiAddress = ['', 'ip4', '10.0.0.9', 'tcp', '4001', 'p2p', id.id ].join('/');
-      const asset_id = Math.floor(Math.random()*1000);
-      await createStorageAsset(
-        props.api, 
-        props.account,
-        multiAddress, 
-        res.path,
-        name,
-        asset_id,
-        1,
-        props.handleEventLogs, 
-        res => console.log(JSON.stringify(res)), 
-        err => console.error(err));
+      const ipv4 = process.env.REACT_APP_IPFS_HOST;
+      if (ipv4 === undefined) {
+        console.error("Please provide the REACT_APP_IPFS_HOST environment variable to use this functionality.");
+      } else {
+        const id = await props.ipfs.id();
+        const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
+        const asset_id = Math.floor(Math.random()*1000);
+        await createStorageAsset(
+          props.api, 
+          props.account,
+          multiAddress, 
+          res.path,
+          name,
+          asset_id,
+          1,
+          props.handleEventLogs, 
+          res => console.log(JSON.stringify(res)), 
+          err => console.error(err)
+        );
+      }
     }
     
   //   const download = (file, filename) => {
