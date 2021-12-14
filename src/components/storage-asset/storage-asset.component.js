@@ -38,9 +38,9 @@ export default function StorageAssetView(props) {
   
     const handleAddBytes = async (bytes, name) => {
       const res = await props.ipfs.add(bytes);
-      const ipv4 = process.env.REACT_APP_IPFS_HOST;
+      const ipv4 = process.env.REACT_APP_IPV4;
       if (ipv4 === undefined) {
-        console.error("Please provide the REACT_APP_IPFS_HOST environment variable to use this functionality.");
+        console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
       } else {
         const id = await props.ipfs.id();
         const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
@@ -59,13 +59,6 @@ export default function StorageAssetView(props) {
         );
       }
     }
-    
-  //   const download = (file, filename) => {
-  //     const mime = require('mime-types');
-  //     const type = mime.lookup(filename);
-  //     const blob = new Blob([file], {type: type});
-  //     saveAs(blob, filename);
-  // }
   
     const arrayBufferToString = (arrayBuffer) => {
       return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));

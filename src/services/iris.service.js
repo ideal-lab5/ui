@@ -1,6 +1,3 @@
-import { create } from "ipfs-http-client";
-
-
 export async function createStorageAsset(
     api, account, multiAddress, cid, name, assetId, balance,
     logs_callback, success_callback, error_callback

@@ -93,9 +93,8 @@ class App extends React.Component {
                 />
               </div>
               <Button 
-                className="login-form-button" 
-                variant="contained" 
-                className="login-submit-btn"
+                className="login-form-button login-submit-btn" 
+                variant="contained"
                 color="primary" 
                 onClick={ this.handleConnect.bind(this) } 
               > Connect 
