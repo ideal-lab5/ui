@@ -1,7 +1,5 @@
 # Iris UI
 
-FUTURE HOME: https://app.iridium.industries
-
 This is an interface for interacting a with an [Iris](https://iridium-labs.github.io) node. The purpose of this user interface is to demonstrate integration with the Iris fork of Substrate.
 
 ## Setup
@@ -9,6 +7,7 @@ This is an interface for interacting a with an [Iris](https://iridium-labs.githu
 ### Prerequisites
 - Setup and run an [Iris node](https://github.com/iridium-labs/substrate/tree/iris)
 - Setup and run an [IPFS node](https://docs.ipfs.io/install/)
+  - It is assumed that the IPFS node exposes it's api on the default port: `4001`.
 
 ### Installation
 **From Sources:**

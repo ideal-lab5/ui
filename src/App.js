@@ -11,7 +11,7 @@ class App extends React.Component {
     this.state = {
       host: 'localhost',
       port: '9944',
-      address: '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY',
+      address: 'Alice',
       connect: false,
     }
 
@@ -93,9 +93,8 @@ class App extends React.Component {
                 />
               </div>
               <Button 
-                className="login-form-button" 
-                variant="contained" 
-                className="login-submit-btn"
+                className="login-form-button login-submit-btn" 
+                variant="contained"
                 color="primary" 
                 onClick={ this.handleConnect.bind(this) } 
               > Connect 
