@@ -32,7 +32,7 @@ export default function MintModal(props) {
     const handleSetAmount = (e) => setAmount(e.target.value);
 
     const handleMint = (e) => {
-      props.mint(recipientAddress, props.cid, amount);
+      props.mint(recipientAddress, props.assetId, amount);
       handleClose();
     };
 

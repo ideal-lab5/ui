@@ -16,8 +16,8 @@ export default function LibraryView(props) {
         );
     };
 
-    const handleRpcCall = (publicKey, signature, mesage) => {
-      props.retrieveBytes(publicKey, signature, mesage);
+    const handleRpcCall = (publicKey, signature, message) => {
+      props.retrieveBytes(publicKey, signature, message);
     }
 
     return (
@@ -30,7 +30,7 @@ export default function LibraryView(props) {
                 <TableHead>
                   <TableRow>
                     <TableCell align="right">Owner</TableCell>
-                    <TableCell align="right">CID</TableCell>
+                    <TableCell align="right">Asset ID</TableCell>
                     <TableCell align="right">Download</TableCell>
                   </TableRow>
                 </TableHead>
@@ -38,12 +38,12 @@ export default function LibraryView(props) {
                   {props.library.map((item, idx) => (
                     <TableRow key={ idx } >
                       <TableCell align="right">{ item.owner  }</TableCell>
-                      <TableCell align="right">{ item.cid }</TableCell>
+                      <TableCell align="right">{ item.asset_id }</TableCell>
                       <TableCell align="right">
-                        <button onClick={() => handleRequestData(item.owner, item.cid)}>
+                        <button onClick={() => handleRequestData(item.owner, item.asset_id)}>
                           Request
                         </button>
-                        <button onClick={() => handleRpcCall('', '', item.cid)}>
+                        <button onClick={() => handleRpcCall('', '', item.asset_id.toString())}>
                           Download
                         </button>
                       </TableCell>

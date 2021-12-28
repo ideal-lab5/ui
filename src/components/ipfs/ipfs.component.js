@@ -139,6 +139,7 @@ class IpfsComponent extends React.Component {
 
   async retrieveBytes(publicKey, signature, message) {
     let res = await this.state.api.rpc.iris.retrieveBytes(publicKey, signature, message);
+    // console.log(res);
     this.download(res, message);
   }
 
@@ -151,32 +152,39 @@ class IpfsComponent extends React.Component {
   }
 
   async parse_asset_class_ownership() {
-    let asset_class_entries = await this.state.api.query.iris.assetClassOwnership.entries(this.getAccount().address);
+    let asset_class_entries = await this.state.api
+      .query.iris.assetClassOwnership
+      .entries(this.getAccount().address);
+    
     let yourAssetClasses = [];
-    for (let i = 0; i < asset_class_entries.length; i++) {
-      const entry = asset_class_entries[i];
-      const cid = this.hexToAscii(String(entry[0]).substr(196));
+
+    asset_class_entries.forEach(([key, exposure]) => {
+      let cid = exposure.toHuman()
+      let asset_id = parseInt(key.args[1].words[0]);
       yourAssetClasses.push({
         cid: cid,
-        assetId: parseInt(String(entry[1])),
+        assetId: asset_id,
       });
-    }
+    });
     this.setState({ yourAssetClasses });
   }
 
   async parse_assets() {
     // get your asset balances
-    let assets_entries = await this.state.api.query.iris.assetAccess.entries(this.getAccount().address);
+    let assets_entries = await this.state.api.query
+      .iris.assetAccess
+      .entries(this.getAccount().address);
     let yourAssets = [];
-    for (let i = 0; i < assets_entries.length; i++) {
-      const entry = assets_entries[i];
-      const owner = String(entry[1]);
-      const cid = this.hexToAscii(String(entry[0]).substr(196));
+
+    assets_entries.forEach(([key, exposure]) => {
+      let asset_id = key.args[1].words[0];
+      let asset_class_owner = exposure.toHuman();
       yourAssets.push({
-        owner: owner,
-        cid: cid
+        owner: asset_class_owner,
+        asset_id: asset_id
       });
-    }
+    });
+
     this.setState({ yourAssets });
   }
 
@@ -222,28 +230,12 @@ class IpfsComponent extends React.Component {
     }
   }
 
-  // captureFile(e) {
-  //   e.stopPropagation();
-  //   e.preventDefault();
-  //   const file = e.target.files[0];
-  //   let reader = new FileReader();
-  //   reader.onloadend = async () => {
-  //     const resultString = this.arrayBufferToString(reader.result);
-  //     await this.addBytes(resultString, file.name, file.size);
-  //   };
-  //   reader.readAsArrayBuffer(file);
-  // }
-
   download(file, filename) {
     const mime = require('mime-types');
     const type = mime.lookup(filename);
     const blob = new Blob([file], {type: type});
     saveAs(blob, filename);
-}
-
-  // arrayBufferToString = (arrayBuffer) => {
-  //   return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
-  // }
+  }
 
   hexToAscii(str1) {
 	  var hex  = str1.toString();
@@ -351,7 +343,7 @@ class IpfsComponent extends React.Component {
                     Connected 
                     { this.msToTime(this.state.connectionAliveTime) }
                   </div>
-                  { this.eventLogs_container() }
+                  {/* { this.eventLogs_container() } */}
                 </div>
               </div>}
               <div className="assets-container">

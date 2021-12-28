@@ -12,11 +12,11 @@ export async function createStorageAsset(
     }
 
 export async function mintTickets(
-    api, account, beneficiary, cid, amount, 
+    api, account, beneficiary, asset_id, amount, 
     logs_callback, success_callback, error_callback
 ) {
     await api.tx.iris
-        .mintTickets(beneficiary, cid, amount)
+        .mintTickets(beneficiary, asset_id, amount)
         .signAndSend(account, logs_callback)
         .then(res => success_callback(res))
         .catch(err => error_callback(err));

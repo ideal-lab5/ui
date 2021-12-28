@@ -96,8 +96,8 @@ export default function StorageAssetView(props) {
                     <TableCell align="right">
                       <MintModal
                         assetId={ item.assetId } 
-                        cid={ item.cid } 
-                        mint={handleMintTicket} 
+                        cid={ item.cid }
+                        mint={ handleMintTicket } 
                       />
                     </TableCell>
                   </TableRow>
