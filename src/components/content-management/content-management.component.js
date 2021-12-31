@@ -93,7 +93,7 @@ export default function ContentManagementView(props) {
                     <TableCell align="right">Asset Id</TableCell>
                     <TableCell align="right">CID</TableCell>
                     <TableCell align="right">Mint</TableCell>
-                    <TableCell align="right">Pin</TableCell>
+                    <TableCell align="right">Manage Pins</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

@@ -1,10 +1,11 @@
 import * as React from 'react';
+import { useState, useEffect } from 'react';
+
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 
-import TextField from '@mui/material/TextField';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -28,23 +29,36 @@ const style = {
   p: 4,
 };
 
+// TODO: This should be lazy loaded 
 export default function PinModal(props) {
   const { useState } = React;
   const [open, setOpen] = React.useState(false);
+  const [pins, setPins] = React.useState();
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const handleCreatePinRequest = async (storageProviderAddress, storageProviderAssetId) => {
+  const handleCreatePinRequest = async (storageProviderAddress, contentAssetId) => {
     await requestLeaseStorageAsset(
       props.api,
       props.account,
-      storageProviderAssetId,
+      contentAssetId,
       storageProviderAddress,
       props.eventLogHandler,
       res => console.log(JSON.stringify(res)),
       err => console.error(err)
     );
   }
+
+  useEffect(async () => {
+    console.log(props.assetId);
+    let res = await props.api.query.iris.pinnedContentAsset(props.assetId);
+    // setPins(res);
+    let pins = [];
+    res.forEach(sp => {
+      pins.push(sp.words[0]);
+    });
+    setPins(pins);
+  }, []);
 
   return (
     <div>
@@ -65,14 +79,44 @@ export default function PinModal(props) {
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             { props.cid }
           </Typography>
+          <div className='container'>
+            <span>Manage Pins</span>
+            <div>
+
+            { pins === [] || pins === undefined ? <span>Pin some data to get started</span> :
+              <TableContainer component={Paper}>
+                  <Table size="small" aria-label="Available Storeage Providers">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell align="left">Storage Provider Asset Id</TableCell>
+                        <TableCell align="left">Manage</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {pins.map((item, idx) => (
+                        <TableRow key={ idx }>
+                          <TableCell align="left">{ item }</TableCell>
+                          <TableCell align="left">
+                            <Button variant="contained" color="primary" onClick={() => handleCreatePinRequest(item.owner[0], props.assetId)}>
+                              Remove Pin
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+            }
+            </div>
+          </div>
           <div>
             <span>Available Storage Providers</span>
               <TableContainer component={Paper}>
-                <Table size="small" aria-label="a dense table">
+                <Table size="small" aria-label="Available Storeage Providers">
                   <TableHead>
                     <TableRow>
-                      <TableCell align="right">Storage Provider</TableCell>
-                      <TableCell align="right">Pin</TableCell>
+                      <TableCell align="left">Storage Provider</TableCell>
+                      <TableCell align="left">Pin</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -82,9 +126,9 @@ export default function PinModal(props) {
                     </span> : props.storageProviders.map((item, idx) => (
                       <TableRow key={ idx }>
                         <TableCell align="left">{ item.owner }</TableCell>
-                        <TableCell align="right">
-                          <Button variant="contained" color="primary" onClick={() => handleCreatePinRequest(item.owner[0], item.assetId)}>
-                            Store Data
+                        <TableCell align="left">
+                          <Button variant="contained" color="primary" onClick={() => handleCreatePinRequest(item.owner[0], props.assetId)}>
+                            Insert Pin
                           </Button>
                         </TableCell>
                       </TableRow>

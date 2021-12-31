@@ -11,11 +11,12 @@ export default function StorageManagementView(props) {
     // const [assetId, setAssetId] = useState('');
     const [candidateAssetId, setCandidateAssetId] = useState('');
 
-    // useEffect(() => {
-    //   if (!assetId) {
-    //       queryStorageConfig();
-    //   }
-    // }, []);
+    useEffect(() => {
+      test();
+      // if (!assetId) {
+      //     queryStorageConfig();
+      // }
+    }, []);
 
     // const queryStorageConfig = async () => {
     //   let res = await props.getSpAssetID();
@@ -33,6 +34,12 @@ export default function StorageManagementView(props) {
         res => console.log(JSON.stringify(res)),
         err => console.error(err)
       );
+    }
+
+    const test = async() => {
+      // need to expose this from the iris pallet
+      // let res = await props.api.query.iris.storageAssets(props.account.address);
+      // console.log('res ' + res);
     }
 
     return (
@@ -66,7 +73,7 @@ export default function StorageManagementView(props) {
             <div>
               <span>Storage Provider Id: { props.storageProviderAssetId }</span>
               <div>
-                <span>Storage Requests/Pending Approvals</span>         
+                <span>Data stored on your node</span>
               </div>
             </div>}
           </div>
