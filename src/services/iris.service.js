@@ -34,11 +34,11 @@ export async function requestData(
 }
 
 export async function initializeStorageCapacityAssetClass(
-    api, account, assetId, balance, amount,
+    api, account, assetId, balance, amount, storage_fee, storage_rate, epoch_blocks,
     logs_callback, success_callback, error_callback
 ) {
     await api.tx.iris
-        .initStorageCapacityAssetClass(account.address, assetId, balance, amount)
+        .initStorageCapacityAssetClass(account.address, assetId, balance, amount, storage_fee, storage_rate, epoch_blocks)
         .signAndSend(account, logs_callback)
         .then(res => success_callback(res))
         .catch(err => error_callback(err));

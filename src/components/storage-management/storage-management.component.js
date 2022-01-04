@@ -6,22 +6,19 @@ import Button from '@material-ui/core/Button';
 import { useState, useEffect } from 'react';
 import { initializeStorageCapacityAssetClass } from '../../services/iris.service';
 
+import './storage-management.component.css';
+
 export default function StorageManagementView(props) {
 
     // const [assetId, setAssetId] = useState('');
     const [candidateAssetId, setCandidateAssetId] = useState('');
+    const [candidateStorageRate, setCandidateStorageRate] = useState('');
+    const [candidateStorageFee, setCandidateStorageFee] = useState('');
+    const [candidateEpochBlocks, setCandidateEpochBlocks] = useState('');
 
     useEffect(() => {
-      test();
-      // if (!assetId) {
-      //     queryStorageConfig();
-      // }
-    }, []);
 
-    // const queryStorageConfig = async () => {
-    //   let res = await props.getSpAssetID();
-    //   setAssetId(res);
-    // }
+    }, []);
 
     const handleInitializeStorage = async() => {
       await initializeStorageCapacityAssetClass(
@@ -30,16 +27,13 @@ export default function StorageManagementView(props) {
         candidateAssetId,
         1,
         1,
+        candidateStorageFee,
+        candidateStorageRate,
+        candidateEpochBlocks,
         props.eventLogHandler,
         res => console.log(JSON.stringify(res)),
         err => console.error(err)
       );
-    }
-
-    const test = async() => {
-      // need to expose this from the iris pallet
-      // let res = await props.api.query.iris.storageAssets(props.account.address);
-      // console.log('res ' + res);
     }
 
     return (
@@ -47,7 +41,7 @@ export default function StorageManagementView(props) {
           <div>
             <span>StorageManagement</span>
           </div>
-          { props.storageProviderAssetId === undefined || props.storageProviderAssetId === 0 ? 
+          { props.storageProviderAssetConfig === undefined || props.storageProviderAssetConfig === null ? 
             <div>
               <form className="login-form">
                 <div className="form-field-container">
@@ -55,11 +49,36 @@ export default function StorageManagementView(props) {
                   <TextField 
                     className="login-form-field" 
                     label="asset id" 
-                    variant="outlined" 
+                    variant="standard"
+                    type="number"
                     onChange={event => setCandidateAssetId(event.target.value)}
                   />
+                  <span>Set a minimum fee required to initiate storage in OBOL</span>
+                  <TextField 
+                    className="login-form-field"
+                    label="storage fee"
+                    variant="standard" 
+                    type="number"
+                    onChange={event => setCandidateStorageFee(event.target.value)}
+                  />
+                  <span>Set your storage rate (in OBOL/kb/block)</span>
+                  <TextField 
+                    className="login-form-field"
+                    label="storage rate"
+                    variant="standard" 
+                    type="number"
+                    onChange={event => setCandidateStorageRate(event.target.value)}
+                  />
+                  <span>Set your epoch (blocks)</span>
+                  <TextField 
+                    className="login-form-field"
+                    label="epoch blocks"
+                    variant="standard" 
+                    type="number"
+                    onChange={event => setCandidateEpochBlocks(event.target.value)}
+                  />
                 </div>
-                <Button 
+                <Button
                   className="login-form-button" 
                   variant="contained" 
                   className="login-submit-btn" 
@@ -70,11 +89,11 @@ export default function StorageManagementView(props) {
               </form>
             </div> 
             :  
-            <div>
-              <span>Storage Provider Id: { props.storageProviderAssetId }</span>
-              <div>
-                <span>Data stored on your node</span>
-              </div>
+            <div className='asset-config-container'>
+              <span>Storage Provider Id: { props.storageProviderAssetConfig.storageAssetId.words[0] }</span>
+              <span>Storage Fee: { props.storageProviderAssetConfig.storageFee.words[0] }</span>
+              <span>Storage Rate: { props.storageProviderAssetConfig.storageRate.words[0] }</span>
+              <span>Epoch Blocks: { props.storageProviderAssetConfig.storageEpochBlocks.words[0] }</span>
             </div>}
           </div>
       );

@@ -40,13 +40,13 @@ class IpfsComponent extends React.Component {
       selected_asset_class_cid: '',
       mint_balance: 1,
       selectedToggle: 'ContentManagementView',
-      storageProviderAssetId: 0,
+      storageProviderAssetConfig: null,
       storageProviders: [],
     }
     this.captureEventLogs = this.captureEventLogs.bind(this);
     this.handleEmittedEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
-    this.getSpAssetId = this.getSpAssetId.bind(this);
+    this.getSpAssetConfig = this.getSpAssetConfig.bind(this);
     this.getStorageProviders = this.getStorageProviders.bind(this);
     // this.mint_tickets = this.mint_tickets.bind(this);
     this.requestData = this.requestData.bind(this);
@@ -109,7 +109,7 @@ class IpfsComponent extends React.Component {
       this.setState({ api: api, default_account: account });
       this.handleEmittedEvents(api);
       this.updateStorage();
-      this.getSpAssetId();
+      this.getSpAssetConfig();
       this.getStorageProviders();
     }
   }
@@ -198,10 +198,12 @@ class IpfsComponent extends React.Component {
   }
 
   // get your storage provider asset id
-  async getSpAssetId() {
+  async getSpAssetConfig() {
     let res = await this.state.api.query
       .iris.storageProvider(this.getAccount().address);
-    this.setState({ storageProviderAssetId: res.words[0] });
+    // console.log(res);
+    res != undefined ? this.setState({ storageProviderAssetConfig: res }) 
+      : console.log('No SP Asset configured'); 
   }
 
   async getStorageProviders() {
@@ -228,7 +230,7 @@ class IpfsComponent extends React.Component {
         const { event,  } = record;
         const eventData = event.data;
         this.updateStorage();
-        this.getSpAssetId();
+        this.getSpAssetConfig();
         this.getStorageProviders();
         if (event.method === 'AssetClassCreated') {
           this.updateStorage();
@@ -238,7 +240,7 @@ class IpfsComponent extends React.Component {
           this.download(fileContent, filename);
         } else {
           // if (event.method === 'StorageProviderInitSuccess')
-          this.getSpAssetId();
+          this.getSpAssetConfig();
         }
       });
     });
@@ -408,7 +410,7 @@ class IpfsComponent extends React.Component {
                       account={ this.getAccount() }
                       api={ this.state.api }
                       eventLogHandler={ this.handleEmittedEvents }
-                      storageProviderAssetId={ this.state.storageProviderAssetId }
+                      storageProviderAssetConfig={ this.state.storageProviderAssetConfig }
                     />
                   }
                 </div>
