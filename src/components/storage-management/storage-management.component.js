@@ -3,98 +3,138 @@ import * as React from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@material-ui/core/Button';
 
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import Paper from '@material-ui/core/Paper';
+
 import { useState, useEffect } from 'react';
-import { initializeStorageCapacityAssetClass } from '../../services/iris.service';
+import { query_AssetIds } from '../../services/iris-assets.service';
 
 import './storage-management.component.css';
+import { call_joinStoragePool, query_StorageProviders_by_AssetId, query_StorageProviders } from '../../services/iris-session.service';
 
 export default function StorageManagementView(props) {
 
-    // const [assetId, setAssetId] = useState('');
-    const [candidateAssetId, setCandidateAssetId] = useState('');
-    const [candidateStorageRate, setCandidateStorageRate] = useState('');
-    const [candidateStorageFee, setCandidateStorageFee] = useState('');
-    const [candidateEpochBlocks, setCandidateEpochBlocks] = useState('');
+    const [assetIds, setAssetIds] = useState([]);
+    const [storedAssetIds, setStoredAssetIds] = useState([]);
+
+    const handleSetAssetIds = async () => {
+      if (props.api === null) {
+        console.log("props not yet initialized");
+      } else {
+        await query_AssetIds(
+          props.api,
+          res => {
+            setAssetIds(res);
+          },
+          err => console.error(err)
+        );
+      }
+    }
+
+    const handleSetStoredAssetIds = async () => {
+      if (props.api === null) {
+        console.log("props not yet initialized");
+      } else {
+        await query_StorageProviders(
+          props.api,
+          res => {
+            let storedAssetIds = [];
+            res.forEach(([key, exposure]) => {
+              if (exposure.includes(props.account.publicKey)) {
+                storedAssetIds.push(key.toHuman()[0]);
+              }
+            });
+            setStoredAssetIds(storedAssetIds);
+          },
+          err => console.error(err)
+        );
+      }
+    }
 
     useEffect(() => {
-
+      handleSetAssetIds();
+      handleSetStoredAssetIds();
     }, []);
 
-    const handleInitializeStorage = async() => {
-      await initializeStorageCapacityAssetClass(
-        props.api,
-        props.account,
-        candidateAssetId,
-        1,
-        1,
-        candidateStorageFee,
-        candidateStorageRate,
-        candidateEpochBlocks,
-        props.eventLogHandler,
-        res => console.log(JSON.stringify(res)),
+
+
+    const handleJoinStoragePool = async (assetId) => {
+      await call_joinStoragePool(
+        props.api, props.account, assetId,
+        res => {
+          console.log(JSON.stringify(res));
+          console.log("Extrinsic submitted successfully");
+        },
         err => console.error(err)
       );
+      // await query_StorageProviders(
+      //   props.api, assetId,
+      //   res => {
+      //     if (!res.includes(props.account.publicKey)) {
+      //       call_joinStoragePool(
+      //         props.api, props.account, assetId,
+      //         res => {
+      //           console.log(JSON.stringify(res));
+      //           console.log("Extrinsic submitted successfully");
+      //         },
+      //         err => console.error(err)
+      //       );
+      //     } else { 
+      //       console.log("Ignoring the request: You are already a member of the storage pool");
+      //     }
+      //   },
+      //   err => {
+      //     console.error(err);
+      //   }
+      // );  
     }
 
     return (
         <div className='storage-management-container'>
           <div>
-            <span>StorageManagement</span>
+            <span>Storage Management</span>
           </div>
-          { props.storageProviderAssetConfig === undefined || props.storageProviderAssetConfig === null ? 
+          { assetIds.length === 0 ? 
             <div>
-              <form className="login-form">
-                <div className="form-field-container">
-                  <span>Set a unique ID as your storage provider ID</span>
-                  <TextField 
-                    className="login-form-field" 
-                    label="asset id" 
-                    variant="standard"
-                    type="number"
-                    onChange={event => setCandidateAssetId(event.target.value)}
-                  />
-                  <span>Set a minimum fee required to initiate storage in OBOL</span>
-                  <TextField 
-                    className="login-form-field"
-                    label="storage fee"
-                    variant="standard" 
-                    type="number"
-                    onChange={event => setCandidateStorageFee(event.target.value)}
-                  />
-                  <span>Set your storage rate (in OBOL/kb/block)</span>
-                  <TextField 
-                    className="login-form-field"
-                    label="storage rate"
-                    variant="standard" 
-                    type="number"
-                    onChange={event => setCandidateStorageRate(event.target.value)}
-                  />
-                  <span>Set your epoch (blocks)</span>
-                  <TextField 
-                    className="login-form-field"
-                    label="epoch blocks"
-                    variant="standard" 
-                    type="number"
-                    onChange={event => setCandidateEpochBlocks(event.target.value)}
-                  />
-                </div>
-                <Button
-                  className="login-form-button" 
-                  variant="contained" 
-                  className="login-submit-btn" 
-                  color="primary"
-                  onClick={ handleInitializeStorage }
-                  > Initialize Storage
-                </Button>
-              </form>
-            </div> 
-            :  
-            <div className='asset-config-container'>
-              <span>Storage Provider Id: { props.storageProviderAssetConfig.storageAssetId.words[0] }</span>
-              <span>Storage Fee: { props.storageProviderAssetConfig.storageFee.words[0] }</span>
-              <span>Storage Rate: { props.storageProviderAssetConfig.storageRate.words[0] }</span>
-              <span>Epoch Blocks: { props.storageProviderAssetConfig.storageEpochBlocks.words[0] }</span>
-            </div>}
-          </div>
+              <span>
+                No assets are available for storage.
+              </span>
+            </div>:
+            <TableContainer component={Paper}>
+            <Table size="small" aria-label="a dense table">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="right">Asset Id</TableCell>
+                  <TableCell align="right">Join Storage Pool</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                { assetIds.map((item, idx) => (
+                  <TableRow key={ idx }>
+                    <TableCell align="right">{ item.words }</TableCell>
+                    <TableCell align="right">
+                    { storedAssetIds.join(',').includes(item.words) === true ?
+                        <div>
+                          <span>Already a member</span>
+                        </div> : 
+                        <div>
+                        <Button onClick={() => handleJoinStoragePool(item.words)}>
+                          Join
+                        </Button>
+                        </div>
+                      }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+          }
+        </div>  
       );
 }

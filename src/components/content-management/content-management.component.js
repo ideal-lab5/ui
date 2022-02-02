@@ -1,4 +1,6 @@
 import * as React from 'react';
+import { useState, useEffect } from 'react';
+
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -9,13 +11,42 @@ import Paper from '@material-ui/core/Paper';
 
 import MintModal from '../mint-modal/mint-modal.component';
 
-import { createStorageAsset, mintTickets } from '../../services/iris.service';
-import PinModal from '../pin-modal/pin-modal.component';
+import { call_create, call_mint, query_AssetClassOwnership_by_AccountId } from '../../services/iris-assets.service';
 
 export default function ContentManagementView(props) {
 
-    const handleMintTicket = async (beneficiary, cid, amount) => {
-      await mintTickets(
+    // const useState = React;
+    const [assetClasses, setAssetClasses] = useState([]);
+
+    const handleLoadAssetClasses = async () => {
+      if (props.api === null) {
+        console.log('props are not yet loaded');
+      } else {
+        await query_AssetClassOwnership_by_AccountId(props.api, props.account.address,
+          res => {
+            let yourAssetClasses = [];
+            res.forEach(([key, exposure]) => {
+              let cid = exposure.toHuman()
+              let asset_id = parseInt(key.args[1].words[0]);
+              yourAssetClasses.push({
+                cid: cid,
+                assetId: asset_id,
+              });
+            });
+            setAssetClasses(yourAssetClasses);
+          },
+          err => {
+            console.error(err);
+          });
+      }
+    }
+
+    useEffect(() => {
+        handleLoadAssetClasses();
+    }, []);
+
+    const handleMint = async (beneficiary, cid, amount) => {
+      await call_mint(
         props.api,
         props.account,
         beneficiary,
@@ -47,7 +78,7 @@ export default function ContentManagementView(props) {
         const id = await props.ipfs.id();
         const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
         const asset_id = Math.floor(Math.random()*1000);
-        await createStorageAsset(
+        await call_create(
           props.api, 
           props.account,
           multiAddress, 
@@ -81,7 +112,7 @@ export default function ContentManagementView(props) {
               autoComplete={"new-password"}
             />
           </div>
-          { props.storageAssetClasses.length === 0 ? 
+          { assetClasses.length === 0 ? 
             <span>
               No owned content. Upload some data to get started.
             </span>
@@ -93,11 +124,10 @@ export default function ContentManagementView(props) {
                     <TableCell align="right">Asset Id</TableCell>
                     <TableCell align="right">CID</TableCell>
                     <TableCell align="right">Mint</TableCell>
-                    <TableCell align="right">Manage Pins</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {props.storageAssetClasses.map((item, idx) => (
+                  {assetClasses.map((item, idx) => (
                     <TableRow key={ idx }>
                       <TableCell align="right">{ item.assetId  }</TableCell>
                       <TableCell align="right">{ item.cid }</TableCell>
@@ -105,17 +135,7 @@ export default function ContentManagementView(props) {
                         <MintModal
                           assetId={ item.assetId } 
                           cid={ item.cid }
-                          mint={ handleMintTicket } 
-                        />
-                      </TableCell>
-                      <TableCell align='right'>
-                        <PinModal
-                          api={ props.api }
-                          account={ props.account }
-                          assetId={ item.assetId } 
-                          cid={ item.cid }
-                          storageProviders={ props.storageProviders }
-                          eventLogHandler={ props.eventLogHandler }
+                          mint={ handleMint } 
                         />
                       </TableCell>
                     </TableRow>
