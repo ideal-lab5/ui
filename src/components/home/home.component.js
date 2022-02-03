@@ -1,6 +1,5 @@
 import React from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
-import { saveAs } from 'file-saver';
 import { create } from 'ipfs-http-client';
 
 import UploadFileIcon from '@mui/icons-material/UploadFile';

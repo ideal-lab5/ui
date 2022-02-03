@@ -24,11 +24,48 @@ export async function query_StorageProviders_by_AssetId(
 // I have a feeling this is going to be a costly function
 // This will need to be updated to scale
 export async function query_StorageProviders(
-    api, success_callback, error_callback
+    api, subscription_callback
 ) {
     // get all storage providers
-    await api.query.irisSession
-        .storageProviders.entries()
+    return api === null ? null : 
+        await api.query.irisSession.storageProviders.entries(sp => 
+            subscription_callback(sp)
+        );
+}
+
+export async function query_CurrentEra(
+    api, subscription_callback
+) {
+    return api === null ? null :
+        await api.query.irisSession.currentEra(eraIndex => 
+            subscription_callback(eraIndex)
+        );
+}
+
+export async function query_ActiveEra(
+    api, subscription_callback
+) {
+    return api === null ? null : 
+        await api.query.irisSession.activeEra(eraIndex =>
+            subscription_callback(eraIndex)
+        );
+}
+
+export async function query_ErasRewardPoints(
+    api, subscription_callback
+) {
+    return api === null ? null :
+        await api.query.irisSession.erasRewardPoints.entries((erasRewardPoints) =>
+            subscription_callback(erasRewardPoints)
+        );
+}
+
+export async function query_RewardPoints_by_Era(
+    api, eraIndex,
+    success_callback, error_callback
+) {
+    await api.query.irisSession 
+        .erasRewardPoints.entries(eraIndex)
         .then(res => success_callback(res))
         .catch(err => error_callback(err));
 }

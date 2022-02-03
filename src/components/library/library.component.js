@@ -65,9 +65,8 @@ export default function LibraryView(props) {
           console.log("Found CID " + _cid);
           rpc_retrieveBytes(props.api, _cid,
             res => { 
-              let _res = String(res).substring(2);
-              console.log(JSON.stringify(_res));
-              download(_res, _cid);
+              console.log(JSON.stringify(res));
+              download(res, _cid);
             },
             err => console.error(err));
         },

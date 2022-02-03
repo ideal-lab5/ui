@@ -75,9 +75,10 @@ export async function query_AssetAccess_by_AccountId(
 }
 
 export async function query_AssetIds(
-    api, success_callback, error_callback
+    api, subscription_callback
 ) {
-    await api.query.iris.assetIds()
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+    return api === null ? null : 
+        api.query.iris.assetIds((assetIds) => 
+            subscription_callback(assetIds)
+        );
 }
