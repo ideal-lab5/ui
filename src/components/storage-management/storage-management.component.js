@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-import TextField from '@mui/material/TextField';
 import Button from '@material-ui/core/Button';
 
 import Table from '@material-ui/core/Table';
@@ -19,8 +18,7 @@ import { query_AssetIds } from '../../services/iris-assets.service';
 import './storage-management.component.css';
 import { 
   call_joinStoragePool, 
-  query_StorageProviders, 
-  query_RewardPoints_by_Era,
+  query_StorageProviders,
   query_ActiveEra,
   query_ErasRewardPoints,
   query_CurrentEra
@@ -39,53 +37,6 @@ export default function StorageManagementView(props) {
     const [currentEra, setCurrentEra] = useState(0);
     // the active session era index
     const [activeEra, setActiveEra] = useState(0);
-
-    // const handleSetAssetIds = async () => {
-    //   if (props.api === null) {
-    //     console.log("props not yet initialized");
-    //   } else {
-    //     await query_AssetIds(
-    //       props.api,
-    //       res => {
-    //         setAssetIds(res);
-    //       },
-    //       err => console.error(err)
-    //     );
-    //   }
-    // }
-
-    // const handleSetStoredAssetIds = async () => {
-    //   if (props.api === null) {
-    //     console.log("props not yet initialized");
-    //   } else {
-    //     await query_StorageProviders(
-    //       props.api,
-    //       res => {
-    //         let storedAssetIds = [];
-    //         res.forEach(([key, exposure]) => {
-    //           // TODO: ugly
-    //           if (exposure.includes(props.account.publicKey)) {
-    //             let assetId = key.toHuman()[0];
-    //             storedAssetIds.push(assetId);
-    //           }
-    //         });
-    //         setStoredAssetIds(storedAssetIds);
-    //       },
-    //       err => console.error(err)
-    //     );
-    //   }
-    // }
-
-    // const handleUpdateRewardPointsForEra = async (eraIndex) => {
-    //   await query_RewardPoints_by_Era(props.api, eraIndex,
-    //     res => {
-    //       console.log('session reward points');
-    //       console.log(JSON.stringify(res));
-    //       setSessionRewardPoints(JSON.stringify(res));
-    //     },
-    //     err => console.error(err)
-    //   );
-    // }
 
     useEffect(async () => {
       // gross
@@ -133,7 +84,6 @@ export default function StorageManagementView(props) {
             };
             setSessionRewardPoints([...sessionRewardPoints, sessionRewardPoint]);
           });
-          console.log(sessionRewardPoints);
         }
       );
 

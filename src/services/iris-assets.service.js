@@ -68,10 +68,11 @@ export async function query_AssetClassOwnership_by_AccountIdAndAssetId(
 // TODO: but hold on... this really shouldn't be public knowledge (though by design it is...)
 // that may be something to address in the future
 export async function query_AssetAccess_by_AccountId(
-    api, address, success_callback, error_callback) {
-    await api.query.iris.assetAccess.entries(address)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+    api, address, subscription_callback) {
+    return api === null ? null : 
+        await api.query.iris.assetAccess.entries(address, (assetAccess) => 
+            subscription_callback(assetAccess)
+        );
 }
 
 export async function query_AssetIds(

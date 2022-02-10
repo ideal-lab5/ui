@@ -10,38 +10,37 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
 import { hexToAscii } from '../../util/utils';
-import { call_requestBytes, rpc_retrieveBytes, query_AssetAccess_by_AccountId, query_AssetClassOwnership_by_AccountIdAndAssetId } from '../../services/iris-assets.service';
+import { 
+  call_requestBytes, 
+  rpc_retrieveBytes, 
+  query_AssetAccess_by_AccountId, 
+  query_AssetClassOwnership_by_AccountIdAndAssetId
+} from '../../services/iris-assets.service';
 import { saveAs } from 'file-saver';
 
 export default function LibraryView(props) {
 
     const [assets, setAssets] = useState([]);
 
-    const handleSetAssets = async () => {
-      if (props.api === null) {
-        console.log('props are not yet loaded');
-      } else {
-        await query_AssetAccess_by_AccountId(props.api, props.account.address,
-        (res) => {
-          let yourAssets = [];
-          res.forEach(([key, exposure]) => {
+    useEffect(async () => {
+      const unsub_assetAccess = await query_AssetAccess_by_AccountId(
+        props.api,
+        props.account.address,
+        assetAccess => {
+          assetAccess.forEach(([key, exposure]) => {
             let asset_id = parseInt(key.args[1].words[0]);
             let asset_class_owner = exposure.toHuman();
-            yourAssets.push({
+            setAssets([...assetAccess, {
               owner: asset_class_owner,
               asset_id: asset_id
-            });
-          });
-          setAssets(yourAssets);
-        },
-        (err) => {
-          console.error(err);
-        })
-      }
-    }
+            }]);
+          })
+        }
+      );
 
-    useEffect(() => {
-      handleSetAssets();
+      return () => {
+        unsub_assetAccess.unsubscribe();
+      };
     }, []);
 
     const handleRequestData = (owner, asset_id) => {
