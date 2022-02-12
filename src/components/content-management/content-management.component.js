@@ -15,35 +15,28 @@ import { call_create, call_mint, query_AssetClassOwnership_by_AccountId } from '
 
 export default function ContentManagementView(props) {
 
-    // const useState = React;
     const [assetClasses, setAssetClasses] = useState([]);
 
-    const handleLoadAssetClasses = async () => {
-      if (props.api === null) {
-        console.log('props are not yet loaded');
-      } else {
-        await query_AssetClassOwnership_by_AccountId(props.api, props.account.address,
-          res => {
-            let yourAssetClasses = [];
-            res.forEach(([key, exposure]) => {
+    useEffect(async () => {
+        const unsub_assetClasses = await query_AssetClassOwnership_by_AccountId(
+          props.api, 
+          props.account.address, 
+          assetClassesRaw => {
+            assetClassesRaw.forEach(([key, exposure]) => {
               let cid = exposure.toHuman()
-              let asset_id = parseInt(key.args[1].words[0]);
-              yourAssetClasses.push({
+              let assetId = parseInt(key.args[1].words[0]);
+              setAssetClasses([...[], {
                 cid: cid,
-                assetId: asset_id,
-              });
+                assetId: assetId,
+              }]);
             });
-            setAssetClasses(yourAssetClasses);
-          },
-          err => {
-            console.error(err);
-          });
-      }
-    }
+          }
+        );
 
-    useEffect(() => {
-        handleLoadAssetClasses();
-    }, []);
+        return () => {
+          unsub_assetClasses.unsubscribe();
+        };
+    }, [props]);
 
     const handleMint = async (beneficiary, cid, amount) => {
       await call_mint(
@@ -77,14 +70,14 @@ export default function ContentManagementView(props) {
       } else {
         const id = await props.ipfs.id();
         const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
-        const asset_id = Math.floor(Math.random()*1000);
+        const assetId = Math.floor(Math.random()*1000);
         await call_create(
           props.api, 
           props.account,
           multiAddress, 
-          res.path,
+          res.path, // the cid
           name,
-          asset_id,
+          assetId,
           1,
           props.eventLogHandler, 
           res => console.log(JSON.stringify(res)), 

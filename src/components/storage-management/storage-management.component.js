@@ -76,13 +76,14 @@ export default function StorageManagementView(props) {
         props.api,
         rps => {
           rps.forEach((k) => {
-            console.log(hexToAscii(String(k[0]).substring(130)));
+            // console.log(hexToAscii(String(k[0]).substring(130)));
+            console.log(JSON.stringify(k));
             let sessionRewardPoint = {
               total: k[1].total,
               individual: k[1].individual,
               unallocated: k[1].unallocated,
             };
-            setSessionRewardPoints([...sessionRewardPoints, sessionRewardPoint]);
+            setSessionRewardPoints(s => sessionRewardPoint);
           });
         }
       );
@@ -94,7 +95,7 @@ export default function StorageManagementView(props) {
         unsub_currentEraIndex.unsubscribe();
         unsub_erasRewardPoints.unsubscribe();
       };
-    }, []);
+    }, [props]);
 
     const handleJoinStoragePool = async (assetId) => {
       await call_joinStoragePool(
@@ -113,14 +114,13 @@ export default function StorageManagementView(props) {
             <span>Current (Planned) Session: { currentEra }</span>
             <span>Active (Rewarded) Session: { activeEra }</span>
             <span>Accumulated Reward points: </span>
-            <span>Session Reward Points: </span>
+            {/* <span>Session Reward Points: </span>
               { sessionRewardPoints.map((item, idx) => {
                 <div>
                   total: { item.total }
-                  unallocated: { item.unallocated }
                   individual: { item.individual }
                 </div>
-              }) }
+              }) } */}
           </div>
           { assetIds.length === 0 ? 
             <div>

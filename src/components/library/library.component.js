@@ -30,7 +30,7 @@ export default function LibraryView(props) {
           assetAccess.forEach(([key, exposure]) => {
             let asset_id = parseInt(key.args[1].words[0]);
             let asset_class_owner = exposure.toHuman();
-            setAssets([...assetAccess, {
+            setAssets([...[], {
               owner: asset_class_owner,
               asset_id: asset_id
             }]);
@@ -41,7 +41,7 @@ export default function LibraryView(props) {
       return () => {
         unsub_assetAccess.unsubscribe();
       };
-    }, []);
+    }, [props]);
 
     const handleRequestData = (owner, asset_id) => {
       // fetch CID from runtime storage
