@@ -21,26 +21,24 @@ import { saveAs } from 'file-saver';
 export default function LibraryView(props) {
 
     const [assets, setAssets] = useState([]);
+    
+    const unsub_assetAccess = async() => await query_AssetAccess_by_AccountId(
+      props.api,
+      props.account.address,
+      assetAccess => {
+        assetAccess.forEach(([key, exposure]) => {
+          let asset_id = parseInt(key.args[1].words[0]);
+          let asset_class_owner = exposure.toHuman();
+          setAssets([...[], {
+            owner: asset_class_owner,
+            asset_id: asset_id
+          }]);
+        })
+      }
+    );
 
-    useEffect(async () => {
-      const unsub_assetAccess = await query_AssetAccess_by_AccountId(
-        props.api,
-        props.account.address,
-        assetAccess => {
-          assetAccess.forEach(([key, exposure]) => {
-            let asset_id = parseInt(key.args[1].words[0]);
-            let asset_class_owner = exposure.toHuman();
-            setAssets([...[], {
-              owner: asset_class_owner,
-              asset_id: asset_id
-            }]);
-          })
-        }
-      );
-
-      return () => {
-        unsub_assetAccess.unsubscribe();
-      };
+    useEffect(() => {
+      unsub_assetAccess();
     }, [props]);
 
     const handleRequestData = (owner, asset_id) => {

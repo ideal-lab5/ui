@@ -17,26 +17,28 @@ export default function ContentManagementView(props) {
 
     const [assetClasses, setAssetClasses] = useState([]);
 
-    useEffect(async () => {
-        const unsub_assetClasses = await query_AssetClassOwnership_by_AccountId(
-          props.api, 
-          props.account.address, 
-          assetClassesRaw => {
-            assetClassesRaw.forEach(([key, exposure]) => {
-              let cid = exposure.toHuman()
-              let assetId = parseInt(key.args[1].words[0]);
-              setAssetClasses([...[], {
+    const unsub_assetClasses = async () => await query_AssetClassOwnership_by_AccountId(
+      props.api, 
+      props.account.address, 
+      assetClassesRaw => {
+        let newAssetClasses = []
+        assetClassesRaw.forEach(([key, exposure]) => {
+          let cid = exposure.toHuman()
+          let assetId = parseInt(key.args[1].words[0]);
+          newAssetClasses.push(
+            {
                 cid: cid,
                 assetId: assetId,
-              }]);
-            });
-          }
-        );
+              }
+          );
+        });
+        setAssetClasses(newAssetClasses);
+      }
+    );
 
-        return () => {
-          unsub_assetClasses.unsubscribe();
-        };
-    }, [props]);
+    useEffect(() => {
+        unsub_assetClasses();
+    }, []);
 
     const handleMint = async (beneficiary, cid, amount) => {
       await call_mint(
@@ -45,9 +47,13 @@ export default function ContentManagementView(props) {
         beneficiary,
         cid,
         amount,
-        props.handleEventLogs, 
-        res => console.log(JSON.stringify(res)), 
-        err => console.error(err));
+        result => {
+          if (result.status.isInBlock) {
+            console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+          } else if (result.status.isFinalized) {
+            console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+          }
+        });
     };
 
     const captureFile = (e) => {
@@ -79,10 +85,14 @@ export default function ContentManagementView(props) {
           name,
           assetId,
           1,
-          props.eventLogHandler, 
-          res => console.log(JSON.stringify(res)), 
-          err => console.error(err)
-        );
+          result => {
+            if (result.status.isInBlock) {
+              console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+            } else if (result.status.isFinalized) {
+              console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+              unsub_assetClasses();
+            }
+          });
       }
     }
   

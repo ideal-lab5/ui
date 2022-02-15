@@ -1,7 +1,7 @@
 // Functions to Call Extrinsics
 export async function call_create(
     api, account, multiAddress, cid, name, assetId, balance,
-    logs_callback, success_callback, error_callback
+    success_callback,
 ) {
     await api.tx.iris
         .create(
@@ -12,20 +12,15 @@ export async function call_create(
             assetId,
             balance
         )
-        .signAndSend(account, logs_callback)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+        .signAndSend(account, result => success_callback(result));
     }
 
 export async function call_mint(
-    api, account, beneficiary, assetId, amount, 
-    logs_callback, success_callback, error_callback
+    api, account, beneficiary, assetId, amount, success_callback,
 ) {
     await api.tx.iris
         .mint(beneficiary, assetId, amount)
-        .signAndSend(account, logs_callback)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+        .signAndSend(account, result => success_callback(result));
 }
 
 export async function call_requestBytes(
@@ -52,15 +47,12 @@ export async function rpc_retrieveBytes(
 // Functions to Query Runtime Storage
 // read AssetClassOwnership by account id
 export async function query_AssetClassOwnership_by_AccountId(
-    api, address, subscription_callback) {
+    api, address, subscription_callback
+) {
     return api === null ? null : 
-        await api.query.iris.assetClassOwnership.entries(address, (assetAccess) => 
+        await api.query.iris.assetClassOwnership.entries(address, (assetAccess) =>
             subscription_callback(assetAccess)
         );
-    // return api === null ? null : 
-    //     await api.query.iris.assetClassOwnership.entries(address, assetClasses => 
-    //         subscription_callback(assetClasses)
-    //     );
 }
 
 export async function query_AssetClassOwnership_by_AccountIdAndAssetId(
@@ -78,7 +70,7 @@ export async function query_AssetClassOwnership_by_AccountIdAndAssetId(
 export async function query_AssetAccess_by_AccountId(
     api, address, subscription_callback) {
     return api === null ? null : 
-        await api.query.iris.assetAccess.entries(address, (assetAccess) => 
+        api.query.iris.assetAccess.entries(address, (assetAccess) => 
             subscription_callback(assetAccess)
         );
 }

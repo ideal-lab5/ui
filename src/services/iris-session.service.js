@@ -1,13 +1,10 @@
 // call extrinsics
 export async function call_joinStoragePool(
-    api, account, assetId,
-    logs_callback, success_callback, error_callback,
+    api, account, assetId, success_callback,
 ) {
     await api.tx.irisSession
         .joinStoragePool(account.address, assetId)
-        .signAndSend(account, logs_callback)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+        .signAndSend(account, result => success_callback(result));
 }
 
 // query runtime storage

@@ -112,25 +112,13 @@ class HomeComponent extends React.Component {
     Event Handlers
   */
   handleEmittedEvents() {
-    // this.state.api.query.system.events((events) => {
-    //   events.forEach(record => {
-    //     const { event,  } = record;
-    //     const eventData = event.data;
-    //     // this.updateStorage();
-    //     // this.getSpAssetConfig();
-    //     // this.getStorageProviders();
-    //     if (event.method === 'AssetClassCreated') {
-    //       // this.updateStorage();
-    //     } else if (event.method === 'DataReady') {
-    //       const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
-    //       const filename = this.hexToAscii(String(eventData[1]).substr(2));
-    //       this.download(fileContent, filename);
-    //     } else {
-    //       // if (event.method === 'StorageProviderInitSuccess')
-    //       // this.getSpAssetConfig();
-    //     }
-    //   });
-    // });
+    this.state.api.query.system.events((events) => {
+      events.forEach(record => {
+        const { event,  } = record;
+        // const eventData = event.data;
+        console.log(JSON.stringify(event));
+      });
+    });
   }
 
   captureEventLogs(e) {
@@ -239,17 +227,17 @@ class HomeComponent extends React.Component {
                       account={ this.getAccount() }
                       api={ this.state.api }
                       ipfs={ this.state.ipfs }
-                      eventLogHandler={ this.handleEmittedEvents }
+                      // eventLogHandler={ this.handleEmittedEvents }
                     /> : this.state.selectedToggle === 'LibraryView' ?
                     <LibraryView
                       account={ this.getAccount() }
                       api = { this.state.api }
-                      eventLogHandler={ this.handleEmittedEvents }
+                      // eventLogHandler={ this.handleEmittedEvents }
                     /> :
                     <StorageManagementView
                       account={ this.getAccount() }
                       api={ this.state.api }
-                      eventLogHandler={ this.handleEmittedEvents }
+                      // eventLogHandler={ this.handleEmittedEvents }
                       storageProviderAssetConfig={ this.state.storageProviderAssetConfig }
                     />
                   }

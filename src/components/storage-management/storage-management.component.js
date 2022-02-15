@@ -32,78 +32,87 @@ export default function StorageManagementView(props) {
     const [storedAssetIds, setStoredAssetIds] = useState([]);
     // const [accumulatedRewardPoints, setAccumulatedRewardPoints] = useState([]);
     // the reward points for the current session
-    const [sessionRewardPoints, setSessionRewardPoints] = useState([]);
-    // the current session era index
-    const [currentEra, setCurrentEra] = useState(0);
-    // the active session era index
-    const [activeEra, setActiveEra] = useState(0);
+    // const [sessionRewardPoints, setSessionRewardPoints] = useState([]);
+    // // the current session era index
+    // const [currentEra, setCurrentEra] = useState(0);
+    // // the active session era index
+    // const [activeEra, setActiveEra] = useState(0);
 
-    useEffect(async () => {
-      // gross
-      const unsub_storedAssetIds = await query_StorageProviders(
-        props.api,
-        res => {
-          let storedAssetIds = [];
-          res.forEach(([key, exposure]) => {
-            // TODO: really will not scale well
-            if (exposure.includes(props.account.publicKey)) {
-              let assetId = key.toHuman()[0];
-              storedAssetIds.push(assetId);
-            }
-          });
-          setStoredAssetIds(storedAssetIds);
-        }
-      );
+    useEffect(() => {
 
-      const unsub_assetIds = await query_AssetIds(
-        props.api,
-        assetIds => {
-          setAssetIds(assetIds);
-        }
-      );
+      unsub_assetIds();
+      unsub_storedAssetIds();
 
-      const unsub_currentEraIndex = await query_CurrentEra(
-        props.api,
-        eraIndex => setCurrentEra(eraIndex.toString())
-      );
-
-      const unsub_activeEraIndex = await query_ActiveEra(
-        props.api,
-        eraIndex => setActiveEra(eraIndex.toString())
-      );
-
-      const unsub_erasRewardPoints = await query_ErasRewardPoints(
-        props.api,
-        rps => {
-          rps.forEach((k) => {
-            // console.log(hexToAscii(String(k[0]).substring(130)));
-            console.log(JSON.stringify(k));
-            let sessionRewardPoint = {
-              total: k[1].total,
-              individual: k[1].individual,
-              unallocated: k[1].unallocated,
-            };
-            setSessionRewardPoints(s => sessionRewardPoint);
-          });
-        }
-      );
-
-      return () => {
-        unsub_activeEraIndex.unsubscribe();
-        unsub_assetIds.unsubscribe();
-        unsub_storedAssetIds.unsubscribe();
-        unsub_currentEraIndex.unsubscribe();
-        unsub_erasRewardPoints.unsubscribe();
-      };
+      // return () => {
+      //   unsub_activeEraIndex.unsubscribe();
+      //   unsub_assetIds.unsubscribe();
+      //   unsub_storedAssetIds.unsubscribe();
+      //   unsub_currentEraIndex.unsubscribe();
+      //   unsub_erasRewardPoints.unsubscribe();
+      // };
     }, [props]);
+
+  // gross
+  const unsub_storedAssetIds = async() => await query_StorageProviders(
+    props.api,
+    res => {
+      let storedAssetIds = [];
+      res.forEach(([key, exposure]) => {
+        // TODO: really will not scale well
+        if (exposure.includes(props.account.publicKey)) {
+          let assetId = key.toHuman()[0];
+          storedAssetIds.push(assetId);
+        }
+      });
+      setStoredAssetIds(storedAssetIds);
+    }
+  );
+
+  const unsub_assetIds = async() => await query_AssetIds(
+    props.api,
+    assetIds => {
+      setAssetIds(assetIds);
+    }
+  );
+
+  // const unsub_currentEraIndex = async() => await query_CurrentEra(
+  //   props.api,
+  //   eraIndex => setCurrentEra(eraIndex.toString())
+  // );
+
+  // const unsub_activeEraIndex = async() => await query_ActiveEra(
+  //   props.api,
+  //   eraIndex => setActiveEra(eraIndex.toString())
+  // );
+
+  // const unsub_erasRewardPoints = async() => await query_ErasRewardPoints(
+  //   props.api,
+  //   rps => {
+  //     rps.forEach((k) => {
+  //       // console.log(hexToAscii(String(k[0]).substring(130)));
+  //       console.log(JSON.stringify(k));
+  //       let sessionRewardPoint = {
+  //         total: k[1].total,
+  //         individual: k[1].individual,
+  //         unallocated: k[1].unallocated,
+  //       };
+  //       setSessionRewardPoints(s => sessionRewardPoint);
+  //     });
+  //   }
+  // );
 
     const handleJoinStoragePool = async (assetId) => {
       await call_joinStoragePool(
         props.api, props.account, assetId,
-        res => {
-          console.log("Extrinsic submitted successfully");
-        },
-        err => console.error(err)
+        result => {
+          if (result.status.isInBlock) {
+            console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+          } else if (result.status.isFinalized) {
+            console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+            unsub_assetIds();
+            unsub_storedAssetIds();
+          }
+        }
       );  
     }
 
@@ -111,16 +120,9 @@ export default function StorageManagementView(props) {
         <div className='storage-management-container'>
           <div className='era-info-container'>
             <span>Storage Management</span>
-            <span>Current (Planned) Session: { currentEra }</span>
-            <span>Active (Rewarded) Session: { activeEra }</span>
+            {/* <span>Current (Planned) Session: { currentEra }</span>
+            <span>Active (Rewarded) Session: { activeEra }</span> */}
             <span>Accumulated Reward points: </span>
-            {/* <span>Session Reward Points: </span>
-              { sessionRewardPoints.map((item, idx) => {
-                <div>
-                  total: { item.total }
-                  individual: { item.individual }
-                </div>
-              }) } */}
           </div>
           { assetIds.length === 0 ? 
             <div>
