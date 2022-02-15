@@ -79,3 +79,7 @@
 .session-info-container {
     display: grid;
 }
+
+.session-info-container > span {
+    padding: 10px;
+}

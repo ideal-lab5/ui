@@ -1,21 +1,23 @@
 import React from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
-import { saveAs } from 'file-saver';
 import { create } from 'ipfs-http-client';
 
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import StorageIcon from '@mui/icons-material/Storage';
 
-import StorageAssetView from "../storage-asset/storage-asset.component";
+import ContentManagementView from "../content-management/content-management.component";
 import LibraryView from "../library/library.component";
+import StorageManagementView from "../storage-management/storage-management.component";
+
 
 import ClipLoader from "react-spinners/ClipLoader";
 
-import './ipfs.component.css';
+import './home.component.css';
 
 // js-ipfs config options documented here:
 // https://hub.docker.com/r/ipfs/js-ipfs/
-class IpfsComponent extends React.Component {
+class HomeComponent extends React.Component {
 
   constructor(props) {
     super(props);
@@ -26,29 +28,13 @@ class IpfsComponent extends React.Component {
       account: null,
       api: null,
       ipfs: null,
-      fileData: '',
-      newCIDEvents: [],
-      ipfsItems: [],
       connectionAliveTime: 0,
       eventLogs: [],
-      yourAssetClasses: [],
-      yourAssets: [],
-      ticketAmount: 1,
-      selected_asset_class_cid: '',
-      mint_balance: 1,
-      selectedToggle: 'StorageAssetView',
+      selectedToggle: '',
     }
     this.captureEventLogs = this.captureEventLogs.bind(this);
-    this.monitorEvents = this.handleEmittedEvents.bind(this);
+    this.handleEmittedEvents = this.handleEmittedEvents.bind(this);
     this.updateElapsedTime = this.updateElapsedTime.bind(this);
-    // this.mint_tickets = this.mint_tickets.bind(this);
-    this.requestData = this.requestData.bind(this);
-    this.retrieveBytes = this.retrieveBytes.bind(this);
-    // event handlers
-    // this.handleFileDataChange = this.handleFileDataChange.bind(this);
-    // this.handleAddToIpfsClick = this.handleAddToIpfsClick.bind(this);
-    // this.handleFileSubmit = this.handleFileSubmit.bind(this);
-    // this.handleDownload = this.handleDownload.bind(this);
   }
     
   async componentDidMount() {
@@ -77,14 +63,6 @@ class IpfsComponent extends React.Component {
                 description: 'retrieve bytes from iris',
                 params: [
                   {
-                    name: 'public_key',
-                    type: 'Bytes'
-                  },
-                  {
-                    name: 'signature',
-                    type: 'Bytes'
-                  },
-                  {
                     name: 'message',
                     type: 'Bytes'
                   }
@@ -99,9 +77,12 @@ class IpfsComponent extends React.Component {
       this.setState({ isConnected: true });
       const keyring = new Keyring({ type: 'sr25519' });
       const account = keyring.addFromUri('//' + this.props.address);
-      this.setState({ api: api, default_account: account });
+      this.setState({ 
+        api: api, 
+        default_account: account, 
+        selectedToggle: 'ContentManagementView'
+      });
       this.handleEmittedEvents(api);
-      this.updateStorage();
     }
   }
 
@@ -127,59 +108,6 @@ class IpfsComponent extends React.Component {
     return this.state.account === null ? this.state.default_account : this.state.account;
   }
 
-  async requestData(owner, cid) {
-    await this.state.api.tx.iris
-      .requestData(owner, cid)
-      .signAndSend(this.getAccount(), this.captureEventLogs)
-      .then(res => this.updateStorage())
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
-  async retrieveBytes(publicKey, signature, message) {
-    let res = await this.state.api.rpc.iris.retrieveBytes(publicKey, signature, message);
-    this.download(res, message);
-  }
-
-  /*
-    Functions that query substrate storage
-  */
-  async updateStorage() {
-    await this.parse_asset_class_ownership();
-    await this.parse_assets();
-  }
-
-  async parse_asset_class_ownership() {
-    let asset_class_entries = await this.state.api.query.iris.assetClassOwnership.entries(this.getAccount().address);
-    let yourAssetClasses = [];
-    for (let i = 0; i < asset_class_entries.length; i++) {
-      const entry = asset_class_entries[i];
-      const cid = this.hexToAscii(String(entry[0]).substr(196));
-      yourAssetClasses.push({
-        cid: cid,
-        assetId: parseInt(String(entry[1])),
-      });
-    }
-    this.setState({ yourAssetClasses });
-  }
-
-  async parse_assets() {
-    // get your asset balances
-    let assets_entries = await this.state.api.query.iris.assetAccess.entries(this.getAccount().address);
-    let yourAssets = [];
-    for (let i = 0; i < assets_entries.length; i++) {
-      const entry = assets_entries[i];
-      const owner = String(entry[1]);
-      const cid = this.hexToAscii(String(entry[0]).substr(196));
-      yourAssets.push({
-        owner: owner,
-        cid: cid
-      });
-    }
-    this.setState({ yourAssets });
-  }
-
   /*
     Event Handlers
   */
@@ -187,15 +115,8 @@ class IpfsComponent extends React.Component {
     this.state.api.query.system.events((events) => {
       events.forEach(record => {
         const { event,  } = record;
-        const eventData = event.data;
-        this.updateStorage();
-        if (event.method === 'AssetClassCreated') {
-          this.updateStorage();
-        } else if (event.method === 'DataReady') {
-          const fileContent = this.hexToAscii(String(eventData[0]).substr(2));
-          const filename = this.hexToAscii(String(eventData[1]).substr(2));
-          this.download(fileContent, filename);
-        }
+        // const eventData = event.data;
+        console.log(JSON.stringify(event));
       });
     });
   }
@@ -222,38 +143,6 @@ class IpfsComponent extends React.Component {
     }
   }
 
-  // captureFile(e) {
-  //   e.stopPropagation();
-  //   e.preventDefault();
-  //   const file = e.target.files[0];
-  //   let reader = new FileReader();
-  //   reader.onloadend = async () => {
-  //     const resultString = this.arrayBufferToString(reader.result);
-  //     await this.addBytes(resultString, file.name, file.size);
-  //   };
-  //   reader.readAsArrayBuffer(file);
-  // }
-
-  download(file, filename) {
-    const mime = require('mime-types');
-    const type = mime.lookup(filename);
-    const blob = new Blob([file], {type: type});
-    saveAs(blob, filename);
-}
-
-  // arrayBufferToString = (arrayBuffer) => {
-  //   return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
-  // }
-
-  hexToAscii(str1) {
-	  var hex  = str1.toString();
-	  var str = '';
-	  for (var n = 0; n < hex.length; n += 2) {
-		  str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
-	  }
-	  return str;
-  }
-
   msToTime(duration) {
     var milliseconds = parseInt((duration % 1000) / 100),
       seconds = Math.floor((duration / 1000) % 60),
@@ -270,32 +159,6 @@ class IpfsComponent extends React.Component {
   /*
     User Input Event handlers
   */
-  handleFileDataChange(e) {
-    e.preventDefault();
-    this.setState({ fileData: e.target.value });
-  }
-  
-  // handleAddToIpfsClick(e) {
-  //   e.preventDefault();
-  //   this.addBytes(this.state.api, this.state.fileData);
-  // }
-
-  handleDownload(cid) {
-    this.catBytes(cid);
-  }
-
-  handleFileSubmit(e) {
-    e.preventDefault();
-  }
-
-  handleFindProviders(cid) {
-    this.getProviders(cid);
-  }
-
-  handleSelectStorageAsset(cid) {
-    this.setState({ selected_asset_class_cid: cid });
-  }
-
   updateToggle(value) {
     this.setState({ selectedToggle: value });
     // this.forceUpdate();
@@ -329,48 +192,53 @@ class IpfsComponent extends React.Component {
       return (
           <div className="ipfs-container">
             <div className="sidebar">
-              <div className="sidebar-item" onClick={() => this.updateToggle('StorageAssetView')}>
-                Storage Assets <InsertDriveFileIcon />
+              <div className="sidebar-item" onClick={() => this.updateToggle('ContentManagementView')}>
+                Content Management <UploadFileIcon />
               </div>
               <div className="sidebar-item" onClick={() => this.updateToggle('LibraryView')}>
                 Library <LibraryBooksIcon />
+              </div>
+              <div className="sidebar-item" onClick={() => this.updateToggle('StorageManagementView')}>
+                Storage Management <StorageIcon />
               </div>
             </div>
             <div className="content-container">
             { this.state.isConnected === false ? 
               <div className="loader-container">
-                <ClipLoader loading={!this.state.isConnected} size={150} />
+                <ClipLoader loading={!this.state.isConnected} size={100} />
               </div> :
               <div className="top-level-container">
                 <div className="container">
                   <div className="session-info-container">
-                    { this.state.default_account === null ? '' : this.getAccount().address }
-                    <span 
-                      className="dot active">
-                    </span> 
-                    Connected 
-                    { this.msToTime(this.state.connectionAliveTime) }
+                    { this.state.default_account === null ? '' : 
+                      <div className="session-info-container">
+                        <span>{ this.getAccount().address }</span>
+                        <span>Connected for: { this.msToTime(this.state.connectionAliveTime) }</span>
+                      </div>
+                    }
                   </div>
-                  { this.eventLogs_container() }
+                  {/* { this.eventLogs_container() } */}
                 </div>
               </div>}
               <div className="assets-container">
                 <div className="assets-view-container">
-                  { this.state.selectedToggle === 'StorageAssetView' ? 
-                    <StorageAssetView
+                  { this.state.selectedToggle === 'ContentManagementView' ? 
+                    <ContentManagementView
                       account={ this.getAccount() }
-                      storageAssetClasses={ this.state.yourAssetClasses }
-                      mint={ this.mint_tickets }
                       api={ this.state.api }
                       ipfs={ this.state.ipfs }
-                      eventLogHandler={ this.handleEmittedEvents }
-                    /> :
+                      // eventLogHandler={ this.handleEmittedEvents }
+                    /> : this.state.selectedToggle === 'LibraryView' ?
                     <LibraryView
                       account={ this.getAccount() }
-                      library={ this.state.yourAssets }
-                      requestData={ this.requestData }
-                      retrieveBytes={ this.retrieveBytes }
+                      api = { this.state.api }
+                      // eventLogHandler={ this.handleEmittedEvents }
+                    /> :
+                    <StorageManagementView
+                      account={ this.getAccount() }
                       api={ this.state.api }
+                      // eventLogHandler={ this.handleEmittedEvents }
+                      storageProviderAssetConfig={ this.state.storageProviderAssetConfig }
                     />
                   }
                 </div>
@@ -382,4 +250,4 @@ class IpfsComponent extends React.Component {
 
 }
 
-export default IpfsComponent;
+export default HomeComponent;
