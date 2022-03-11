@@ -37,7 +37,7 @@ export default function ContentManagementView(props) {
     );
 
     useEffect(() => {
-        unsub_assetClasses();
+        // unsub_assetClasses();
     }, []);
 
     const handleMint = async (beneficiary, cid, amount) => {
