@@ -14,7 +14,7 @@ import {
   call_requestBytes, 
   rpc_retrieveBytes, 
   query_AssetAccess_by_AccountId, 
-  query_AssetClassOwnership_by_AccountIdAndAssetId
+  query_Metadata_by_AssetId
 } from '../../services/iris-assets.service';
 import { saveAs } from 'file-saver';
 
@@ -26,20 +26,24 @@ export default function LibraryView(props) {
       props.api,
       props.account.address,
       assetAccess => {
+        console.log(assetAccess);
+        let yourAssets = [];
         assetAccess.forEach(([key, exposure]) => {
-          let asset_id = parseInt(key.args[1].words[0]);
-          let asset_class_owner = exposure.toHuman();
-          setAssets([...[], {
-            owner: asset_class_owner,
-            asset_id: asset_id
-          }]);
-        })
+          let assetId = parseInt(key.args[1].words[0]);
+          let assetClassOwner = exposure.toHuman();
+          yourAssets.push({
+            assetId: assetId,
+            assetClassOwner: assetClassOwner,
+          });
+        });
+
+        setAssets(yourAssets);
       }
     );
 
     useEffect(() => {
       unsub_assetAccess();
-    }, [props]);
+    }, []);
 
     const handleRequestData = (owner, asset_id) => {
       // fetch CID from runtime storage
@@ -54,9 +58,9 @@ export default function LibraryView(props) {
       );
     }
 
-    const handleRpcCall = (owner, asset_id) => {
-      query_AssetClassOwnership_by_AccountIdAndAssetId(
-        props.api, owner, asset_id,
+    const handleRpcCall = (asset_id) => {
+      query_Metadata_by_AssetId(
+        props.api, asset_id,
         cid => {
           let _cid = hexToAscii(String(cid).substring(2));
           console.log("Found CID " + _cid);
@@ -94,13 +98,13 @@ export default function LibraryView(props) {
                 <TableBody>
                   {assets.map((item, idx) => (
                     <TableRow key={ idx } >
-                      <TableCell align="right">{ item.owner  }</TableCell>
-                      <TableCell align="right">{ item.asset_id }</TableCell>
+                      <TableCell align="right">{ item.assetClassOwner  }</TableCell>
+                      <TableCell align="right">{ item.assetId }</TableCell>
                       <TableCell align="right">
-                        <button onClick={() => handleRequestData(item.owner, item.asset_id)}>
+                        <button onClick={() => handleRequestData(item.assetClassOwner, item.assetId)}>
                           Request
                         </button>
-                        <button onClick={() => handleRpcCall(item.owner, item.asset_id)}>
+                        <button onClick={() => handleRpcCall(item.assetId)}>
                           Download
                         </button>
                       </TableCell>

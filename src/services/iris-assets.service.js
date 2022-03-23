@@ -41,27 +41,26 @@ export async function rpc_retrieveBytes(
     await api.rpc.iris.retrieveBytes(message)
         .then(res => success_callback(res))
         .catch(err => error_callback(err));
-    // this.download(res, message);
   }
 
 // Functions to Query Runtime Storage
 // read AssetClassOwnership by account id
-export async function query_AssetClassOwnership_by_AccountId(
+export async function query_AssetClassOwnership(
     api, address, subscription_callback
 ) {
     return api === null ? null : 
-        await api.query.irisAssets.assetClassOwnership.entries(address, (assetAccess) =>
-            subscription_callback(assetAccess)
+        await api.query.irisAssets.assetClassOwnership(address, assetAccess =>
+            subscription_callback([assetAccess])
         );
 }
 
-export async function query_AssetClassOwnership_by_AccountIdAndAssetId(
-    api, address, assetId, 
-    success_callback, error_callback
+export async function query_Metadata_by_AssetId(
+    api, asset_id, subscription_callback,
 ) {
-    await api.query.irisAssets.assetClassOwnership(address, assetId)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+    return api === null ? null : 
+        await api.query.irisAssets.metadata.entries(asset_id, (metadata) =>
+            subscription_callback(metadata)
+        );
 }
 
 // read AssetAccess by account id
