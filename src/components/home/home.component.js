@@ -5,6 +5,7 @@ import { create } from 'ipfs-http-client';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import StorageIcon from '@mui/icons-material/Storage';
+import CurrencyExchangeIcon from '@mui/icons-material/SwapHoriz';
 
 import ContentManagementView from "../content-management/content-management.component";
 import LibraryView from "../library/library.component";
@@ -14,6 +15,7 @@ import StorageManagementView from "../storage-management/storage-management.comp
 import ClipLoader from "react-spinners/ClipLoader";
 
 import './home.component.css';
+import AssetExchangeView from "../asset-exchange/asset-exchange.component";
 
 // js-ipfs config options documented here:
 // https://hub.docker.com/r/ipfs/js-ipfs/
@@ -201,12 +203,19 @@ class HomeComponent extends React.Component {
               <div className="sidebar-item" onClick={() => this.updateToggle('StorageManagementView')}>
                 Storage Management <StorageIcon />
               </div>
+              <div className="sidebar-item" onClick={() => this.updateToggle('AssetExchange')}>
+                Asset Exchange <CurrencyExchangeIcon />
+              </div>
             </div>
             <div className="content-container">
             { this.state.isConnected === false ? 
-              <div className="loader-container">
-                <ClipLoader loading={!this.state.isConnected} size={100} />
-              </div> :
+            <div>
+              Loading...
+              </div>
+              // <div className="loader-container">
+              //   <ClipLoader loading={!this.state.isConnected} size={100} />
+              // </div>
+               :
               <div className="top-level-container">
                 <div className="container">
                   <div className="session-info-container">
@@ -217,7 +226,6 @@ class HomeComponent extends React.Component {
                       </div>
                     }
                   </div>
-                  {/* { this.eventLogs_container() } */}
                 </div>
               </div>}
               <div className="assets-container">
@@ -227,19 +235,17 @@ class HomeComponent extends React.Component {
                       account={ this.getAccount() }
                       api={ this.state.api }
                       ipfs={ this.state.ipfs }
-                      // eventLogHandler={ this.handleEmittedEvents }
                     /> : this.state.selectedToggle === 'LibraryView' ?
                     <LibraryView
                       account={ this.getAccount() }
                       api = { this.state.api }
-                      // eventLogHandler={ this.handleEmittedEvents }
-                    /> :
+                    /> : this.state.selectedToggle === 'StorageManagementView' ?
                     <StorageManagementView
                       account={ this.getAccount() }
                       api={ this.state.api }
-                      // eventLogHandler={ this.handleEmittedEvents }
                       storageProviderAssetConfig={ this.state.storageProviderAssetConfig }
-                    />
+                    /> : 
+                    <AssetExchangeView />
                   }
                 </div>
               </div>
