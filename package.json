@@ -1,5 +1,6 @@
 {
   "name": "iris",
+  "author": "Tony Riemer <driemworks@iridium.industries>",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -11,6 +12,7 @@
     "@mui/icons-material": "^5.1.0",
     "@mui/material": "^5.1.0",
     "@polkadot/api": "^6.2.1",
+    "@polkadot/api-contract": "^6.2.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",

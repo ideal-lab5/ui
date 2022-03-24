@@ -1,6 +1,6 @@
 import { Button, ButtonGroup, TextField } from '@mui/material';
 import * as React from 'react';
-// import { ContractPromise } from '@polkadot/api-contract';
+import { ContractPromise } from '@polkadot/api-contract';
 
 import './asset-exchange.component.css';
 import PublishSaleComponent from './publish-sale/publish-sale.component';
@@ -18,13 +18,6 @@ export default function AssetExchangeView(props) {
   const handleSetAddress = (addr) => setAddress(addr);
 
   const [contractPromise, setContractPromise] = React.useState(null);
-  const handleSetContractPromise = (api, abi, address) => {
-    // setContractPromise(new ContractPromise(api, abi, address));
-  };
-
-  const handleAbiUpload = (e) => {
-    // setContractPromise(new ContractPromise(props.api, e, address));
-  }
 
   const captureFile = (e) => {
     e.stopPropagation();
@@ -32,14 +25,11 @@ export default function AssetExchangeView(props) {
     const file = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = async () => {
-      const resultString = arrayBufferToString(reader.result);
-      // await handleAbiUpload(resultString);
+      const abi = new TextDecoder("utf-8").decode(new Uint8Array(reader.result));
+      let contractPromise = new ContractPromise(props.api, JSON.parse(abi), address);
+      setContractPromise(contractPromise);
     };
     reader.readAsArrayBuffer(file);
-  }
-
-  const arrayBufferToString = (arrayBuffer) => {
-    return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
   }
 
   return (
