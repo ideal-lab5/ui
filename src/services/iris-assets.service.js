@@ -1,4 +1,15 @@
 // Functions to Call Extrinsics
+/**
+ * Call the IrisAssets::create extrinsic
+ * @param {} api 
+ * @param {*} account 
+ * @param {*} multiAddress 
+ * @param {*} cid 
+ * @param {*} name 
+ * @param {*} assetId 
+ * @param {*} balance 
+ * @param {*} success_callback 
+ */
 export async function call_create(
     api, account, multiAddress, cid, name, assetId, balance,
     success_callback,
@@ -15,6 +26,15 @@ export async function call_create(
         .signAndSend(account, result => success_callback(result));
     }
 
+/**
+ * Call the IrisAssets::mint extrinsic
+ * @param {*} api 
+ * @param {*} account 
+ * @param {*} beneficiary 
+ * @param {*} assetId 
+ * @param {*} amount 
+ * @param {*} success_callback 
+ */
 export async function call_mint(
     api, account, beneficiary, assetId, amount, success_callback,
 ) {

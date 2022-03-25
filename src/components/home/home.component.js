@@ -246,6 +246,7 @@ class HomeComponent extends React.Component {
                       storageProviderAssetConfig={ this.state.storageProviderAssetConfig }
                     /> : 
                     <AssetExchangeView
+                      account={ this.getAccount() }
                       api={ this.state.api }
                     />
                   }

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useState, useEffect } from 'react';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -9,14 +10,15 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
 import './publish-sale.component.css';
-import { query_AssetAccess_by_AccountId } from '../../../services/iris-assets.service';
+import { query_AssetClassOwnership } from '../../../services/iris-assets.service';
 import PublishSaleModal from './publish-sale.modal';
+import { call_publishTokenSale } from '../../../services/iris-asset-exchange.service';
 
 export default function PublishSaleComponent(props) {
 
-  const [assetClasses, setAssetClasses] = React.useState([]);
+  const [assetClasses, setAssetClasses] = useState([]);
 
-  const unsub_assetClasses = async () => await query_AssetAccess_by_AccountId(
+  const unsub_assetClasses = async () => await query_AssetClassOwnership(
     props.api, 
     props.account.address, 
     assetClassesRaw => {
@@ -24,45 +26,58 @@ export default function PublishSaleComponent(props) {
       setAssetClasses(assetClassIds);
     }
   );
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (props.account) unsub_assetClasses();
   }, []);
 
+  const publishTokenSale = async (assetId, quantity, price) => {
+    await call_publishTokenSale(
+      props.contractPromise, props.account, 1, 300000000,
+      assetId, quantity, price, result => {
+        if (result.status.isInBlock) {
+          console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+        } else if (result.status.isFinalized) {
+          console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
+        }
+    });
+  }
 
-    return (
-        <div className="container">
-          <div>
-            <span>Publish Sale</span>
-          </div>
-          <div>
-          { assetClasses.length === 0 ? 
-            <span>
-              No owned content. Upload some data to get started.
-            </span>
-          : 
-            <TableContainer component={Paper}>
-              <Table size="small" aria-label="a dense table">
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="right">Asset Id</TableCell>
-                    <TableCell align="right">Publish</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {assetClasses.map((item, idx) => (
-                    <TableRow key={ idx }>
-                      <TableCell align="right">{ item }</TableCell>
-                      <TableCell align="right">
-                        <PublishSaleModal assetId={ item } />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          }
-          </div>
+  return (
+      <div className="container">
+        <div>
+          <span>Publish Sale</span>
         </div>
-      );
+        <div>
+        { assetClasses.length === 0 ? 
+          <span>
+            No owned content. Upload some data to get started.
+          </span>
+        : 
+          <TableContainer component={Paper}>
+            <Table size="small" aria-label="a dense table">
+              <TableHead>
+                <TableRow>
+                  <TableCell align="right">Asset Id</TableCell>
+                  <TableCell align="right">Publish</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {assetClasses.map((item, idx) => (
+                  <TableRow key={ idx }>
+                    <TableCell align="right">{ item }</TableCell>
+                    <TableCell align="right">
+                      <PublishSaleModal 
+                        assetId={ item }
+                        publishTokenSale={ publishTokenSale }
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        }
+        </div>
+      </div>
+    );
 }

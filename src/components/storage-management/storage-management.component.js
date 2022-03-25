@@ -43,13 +43,6 @@ export default function StorageManagementView(props) {
       unsub_assetIds();
       unsub_storedAssetIds();
 
-      // return () => {
-      //   unsub_activeEraIndex.unsubscribe();
-      //   unsub_assetIds.unsubscribe();
-      //   unsub_storedAssetIds.unsubscribe();
-      //   unsub_currentEraIndex.unsubscribe();
-      //   unsub_erasRewardPoints.unsubscribe();
-      // };
     }, [props]);
 
   // gross

@@ -1,10 +1,11 @@
 import { Button, ButtonGroup, TextField } from '@mui/material';
 import * as React from 'react';
-import { ContractPromise } from '@polkadot/api-contract';
+import { Abi, ContractPromise } from '@polkadot/api-contract';
 
 import './asset-exchange.component.css';
 import PublishSaleComponent from './publish-sale/publish-sale.component';
 import RegistryView from './view-registry/view-registry.component';
+import { call_publishTokenSale } from '../../services/iris-asset-exchange.service';
 
 export default function AssetExchangeView(props) {
 
@@ -15,6 +16,7 @@ export default function AssetExchangeView(props) {
   const handleSetToggle = (name) => setToggle(name);
 
   const [address, setAddress] = React.useState('');
+  const [abi, setABI] = React.useState('');
   const handleSetAddress = (addr) => setAddress(addr);
 
   const [contractPromise, setContractPromise] = React.useState(null);
@@ -25,9 +27,11 @@ export default function AssetExchangeView(props) {
     const file = e.target.files[0];
     let reader = new FileReader();
     reader.onloadend = async () => {
-      const abi = new TextDecoder("utf-8").decode(new Uint8Array(reader.result));
-      let contractPromise = new ContractPromise(props.api, JSON.parse(abi), address);
-      setContractPromise(contractPromise);
+      const abiJson = new TextDecoder("utf-8").decode(new Uint8Array(reader.result));
+      const abi = new Abi(abiJson, props.api.registry.getChainProperties());
+      setABI(abi);
+      // let contractPromise = new ContractPromise(props.api, JSON.parse(abi), address);
+      // setContractPromise(contractPromise);
     };
     reader.readAsArrayBuffer(file);
   }
@@ -38,7 +42,7 @@ export default function AssetExchangeView(props) {
           <span className='section-title'>Asset Exchange</span>
         </div>
         <div>
-          { contractPromise === null ? 
+          { abi === '' ? 
             <div className='grid'>
               <span>Set Contract Address</span>
               <TextField 
@@ -68,9 +72,18 @@ export default function AssetExchangeView(props) {
             <div>
               { toggle === PublishSaleComponent.name ?
                 <PublishSaleComponent
+                  api={ props.api }
+                  account={ props.account }
                   contractPromise={ contractPromise }
+                  abi={ abi }
                 /> :
-                <RegistryView /> }
+                <RegistryView
+                  api={ props.api }
+                  account={ props.account }
+                  contractPromise={ contractPromise }
+                  abi={ abi }
+                  address={ address }
+                /> }
             </div>
           </div>
           }
