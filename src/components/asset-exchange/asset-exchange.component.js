@@ -11,7 +11,7 @@ export default function AssetExchangeView(props) {
   // this could potentially be abstracted to be made reusable
   const toggleNames = [PublishSaleComponent.name, RegistryView.name];
 
-  const [toggle, setToggle] = React.useState('');
+  const [toggle, setToggle] = React.useState(toggleNames[0]);
   const handleSetToggle = (name) => setToggle(name);
 
   const [address, setAddress] = React.useState('');
@@ -66,7 +66,11 @@ export default function AssetExchangeView(props) {
               </ButtonGroup>
             </div>
             <div>
-              { toggle === PublishSaleComponent.name ? <PublishSaleComponent /> : <RegistryView /> }
+              { toggle === PublishSaleComponent.name ?
+                <PublishSaleComponent
+                  contractPromise={ contractPromise }
+                /> :
+                <RegistryView /> }
             </div>
           </div>
           }

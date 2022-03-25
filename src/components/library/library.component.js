@@ -75,9 +75,10 @@ export default function LibraryView(props) {
     )}
 
     const download = (file, filename) => {
-      const mime = require('mime-types');
-      const type = mime.lookup(filename);
-      const blob = new Blob([file], {type: type});
+      // const mime = require('mime-types');
+      // const type = mime.lookup(filename);
+      // const blob = new Blob([file], {type: type});
+      const blob = new Blob([file]);
       saveAs(blob, filename);
     }
 

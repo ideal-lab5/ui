@@ -35,6 +35,7 @@ export default function PublishSaleModal(props) {
     const handleSetPrice = (e) => setPrice(e.target.value);
 
     const handleSubmit = (e) => {
+      // props.publish_sale();
     //   props.mint(recipientAddress, props.assetId, amount);
       handleClose();
     };

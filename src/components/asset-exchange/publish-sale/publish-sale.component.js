@@ -10,6 +10,7 @@ import Paper from '@material-ui/core/Paper';
 
 import './publish-sale.component.css';
 import { query_AssetAccess_by_AccountId } from '../../../services/iris-assets.service';
+import PublishSaleModal from './publish-sale.modal';
 
 export default function PublishSaleComponent(props) {
 
@@ -53,10 +54,7 @@ export default function PublishSaleComponent(props) {
                     <TableRow key={ idx }>
                       <TableCell align="right">{ item }</TableCell>
                       <TableCell align="right">
-                        {/* <MintModal
-                          assetId={ item }
-                          mint={ handleMint } 
-                        /> */}
+                        <PublishSaleModal assetId={ item } />
                       </TableCell>
                     </TableRow>
                   ))}

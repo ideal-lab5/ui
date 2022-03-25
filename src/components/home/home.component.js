@@ -12,7 +12,7 @@ import LibraryView from "../library/library.component";
 import StorageManagementView from "../storage-management/storage-management.component";
 
 
-import ClipLoader from "react-spinners/ClipLoader";
+// import ClipLoader from "react-spinners/ClipLoader";
 
 import './home.component.css';
 import AssetExchangeView from "../asset-exchange/asset-exchange.component";
