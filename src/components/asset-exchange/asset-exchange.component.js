@@ -16,10 +16,9 @@ export default function AssetExchangeView(props) {
   const handleSetToggle = (name) => setToggle(name);
 
   const [address, setAddress] = React.useState('');
-  const [abi, setABI] = React.useState('');
   const handleSetAddress = (addr) => setAddress(addr);
 
-  const [contractPromise, setContractPromise] = React.useState(null);
+  const [abi, setABI] = React.useState('');
 
   const captureFile = (e) => {
     e.stopPropagation();
@@ -30,8 +29,6 @@ export default function AssetExchangeView(props) {
       const abiJson = new TextDecoder("utf-8").decode(new Uint8Array(reader.result));
       const abi = new Abi(abiJson, props.api.registry.getChainProperties());
       setABI(abi);
-      // let contractPromise = new ContractPromise(props.api, JSON.parse(abi), address);
-      // setContractPromise(contractPromise);
     };
     reader.readAsArrayBuffer(file);
   }
@@ -74,13 +71,12 @@ export default function AssetExchangeView(props) {
                 <PublishSaleComponent
                   api={ props.api }
                   account={ props.account }
-                  contractPromise={ contractPromise }
                   abi={ abi }
+                  address={ address }
                 /> :
                 <RegistryView
                   api={ props.api }
                   account={ props.account }
-                  contractPromise={ contractPromise }
                   abi={ abi }
                   address={ address }
                 /> }

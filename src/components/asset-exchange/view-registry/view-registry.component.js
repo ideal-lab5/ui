@@ -8,11 +8,11 @@ export default function RegistryView(props) {
 
   const readRegistry = async () => {
     await read_registry(props.api, props.abi, props.account, props.address, result => {
+      console.log(result.toHuman());
       if (result.status.isInBlock) {
         console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
       } else if (result.status.isFinalized) {
         console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-        console.log(result);
       }
     });
   }

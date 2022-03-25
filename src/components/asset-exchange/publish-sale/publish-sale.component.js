@@ -32,7 +32,7 @@ export default function PublishSaleComponent(props) {
 
   const publishTokenSale = async (assetId, quantity, price) => {
     await call_publishTokenSale(
-      props.contractPromise, props.account, 1, 300000000,
+      props.api, props.abi, props.address, props.account, 1, 300000000,
       assetId, quantity, price, result => {
         if (result.status.isInBlock) {
           console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
