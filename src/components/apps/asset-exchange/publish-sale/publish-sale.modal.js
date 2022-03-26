@@ -25,17 +25,14 @@ export default function PublishSaleModal(props) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const [recipientAddress, setRecipientAddress] = useState('');
-  const handleSetRecipientAddress = (e) => setRecipientAddress(e.target.value);
-
   const [amount, setAmount] = useState('');
   const handleSetAmount = (e) => setAmount(e.target.value);
 
   const [price, setPrice] = useState('');
   const handleSetPrice = (e) => setPrice(e.target.value);
 
-  const handleSubmit = (e) => {
-    props.publishTokenSale(props.assetId, amount, price);
+  const handleSubmit = () => {
+    props.publishTokenSale(props.assetId[0], amount, price);
     handleClose();
   };
 

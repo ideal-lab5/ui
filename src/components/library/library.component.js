@@ -84,8 +84,8 @@ export default function LibraryView(props) {
 
     return (
         <div>
-          <div>
-            <span>Library</span>
+          <div className='title-container'>
+            <span className='section-title'>Library</span>
           </div>
           <TableContainer component={Paper}>
               <Table size="small" aria-label="a dense table">

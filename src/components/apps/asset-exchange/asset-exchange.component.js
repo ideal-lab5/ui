@@ -5,7 +5,7 @@ import { Abi, ContractPromise } from '@polkadot/api-contract';
 import './asset-exchange.component.css';
 import PublishSaleComponent from './publish-sale/publish-sale.component';
 import RegistryView from './view-registry/view-registry.component';
-import { call_publishTokenSale } from '../../services/iris-asset-exchange.service';
+import { call_publishTokenSale } from '../../../services/iris-asset-exchange.service';
 
 export default function AssetExchangeView(props) {
 
@@ -19,6 +19,7 @@ export default function AssetExchangeView(props) {
   const handleSetAddress = (addr) => setAddress(addr);
 
   const [abi, setABI] = React.useState('');
+  const [contractPromise, setContractPromise] = React.useState(null);
 
   const captureFile = (e) => {
     e.stopPropagation();
@@ -27,6 +28,8 @@ export default function AssetExchangeView(props) {
     let reader = new FileReader();
     reader.onloadend = async () => {
       const abiJson = new TextDecoder("utf-8").decode(new Uint8Array(reader.result));
+      let contractPromise = new ContractPromise(props.api, JSON.parse(abiJson), address);
+      setContractPromise(contractPromise);
       const abi = new Abi(abiJson, props.api.registry.getChainProperties());
       setABI(abi);
     };
@@ -35,11 +38,11 @@ export default function AssetExchangeView(props) {
 
   return (
       <div className="container">
-        <div>
+        <div className='title-container'>
           <span className='section-title'>Asset Exchange</span>
         </div>
         <div>
-          { abi === '' ? 
+          { contractPromise === null ? 
             <div className='grid'>
               <span>Set Contract Address</span>
               <TextField 
@@ -72,13 +75,14 @@ export default function AssetExchangeView(props) {
                   api={ props.api }
                   account={ props.account }
                   abi={ abi }
-                  address={ address }
+                  contractPromise={ contractPromise }
                 /> :
                 <RegistryView
                   api={ props.api }
                   account={ props.account }
                   abi={ abi }
-                  address={ address }
+                  contractPromise={ contractPromise }
+                  contractAddress={ address }
                 /> }
             </div>
           </div>

@@ -92,8 +92,8 @@ export default function ContentManagementView(props) {
 
     return (
         <div className="container">
-          <div>
-            <span>Content Management</span>
+          <div className='title-container'>
+            <span className='section-title'>Content Management</span>
           </div>
           <div>
             <input 

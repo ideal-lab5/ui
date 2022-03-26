@@ -89,7 +89,7 @@ export async function query_Metadata_by_AssetId(
 export async function query_AssetAccess_by_AccountId(
     api, address, subscription_callback) {
     return api === null ? null : 
-        api.query.irisAssets.assetAccess.entries(address, (assetAccess) => 
+        api.query.irisAssets.assetAccess(address, (assetAccess) => 
             subscription_callback(assetAccess)
         );
 }

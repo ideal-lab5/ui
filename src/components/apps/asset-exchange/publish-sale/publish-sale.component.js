@@ -10,9 +10,9 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
 import './publish-sale.component.css';
-import { query_AssetClassOwnership } from '../../../services/iris-assets.service';
+import { query_AssetClassOwnership } from '../../../../services/iris-assets.service';
 import PublishSaleModal from './publish-sale.modal';
-import { call_publishTokenSale } from '../../../services/iris-asset-exchange.service';
+import { call_publishTokenSale } from '../../../../services/iris-asset-exchange.service';
 
 export default function PublishSaleComponent(props) {
 
@@ -27,13 +27,16 @@ export default function PublishSaleComponent(props) {
     }
   );
   useEffect(() => {
-    if (props.account) unsub_assetClasses();
+    if (props.account) {
+      unsub_assetClasses();
+    }
   }, []);
 
   const publishTokenSale = async (assetId, quantity, price) => {
     await call_publishTokenSale(
-      props.api, props.abi, props.address, props.account, 1, 300000000,
+      props.contractPromise, props.account, 0, -1,
       assetId, quantity, price, result => {
+        console.log(result);
         if (result.status.isInBlock) {
           console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
         } else if (result.status.isFinalized) {
@@ -53,29 +56,29 @@ export default function PublishSaleComponent(props) {
             No owned content. Upload some data to get started.
           </span>
         : 
-          <TableContainer component={Paper}>
-            <Table size="small" aria-label="a dense table">
-              <TableHead>
-                <TableRow>
-                  <TableCell align="right">Asset Id</TableCell>
-                  <TableCell align="right">Publish</TableCell>
+        <TableContainer component={Paper}>
+          <Table size="small" aria-label="a dense table">
+            <TableHead>
+              <TableRow>
+                <TableCell align="right">Asset Id</TableCell>
+                <TableCell align="right">Publish</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {assetClasses.map((item, idx) => (
+                <TableRow key={ idx }>
+                  <TableCell align="right">{ item }</TableCell>
+                  <TableCell align="right">
+                    <PublishSaleModal 
+                      assetId={ item }
+                      publishTokenSale={ publishTokenSale }
+                    />
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {assetClasses.map((item, idx) => (
-                  <TableRow key={ idx }>
-                    <TableCell align="right">{ item }</TableCell>
-                    <TableCell align="right">
-                      <PublishSaleModal 
-                        assetId={ item }
-                        publishTokenSale={ publishTokenSale }
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
         }
         </div>
       </div>
