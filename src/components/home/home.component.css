@@ -1,5 +1,6 @@
 .menu {
-    padding: 20px;
+    padding: 20px !important;
+    display: flex !important;
 }
 
 .event-log-item-container {

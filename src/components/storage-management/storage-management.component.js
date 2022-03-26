@@ -110,7 +110,7 @@ export default function StorageManagementView(props) {
     }
 
     return (
-        <div className='storage-management-container'>
+        <div className='container'>
           <div className='era-info-container title-container'>
             <span className='section-title'>Storage Management</span>
             {/* <span>Current (Planned) Session: { currentEra }</span>

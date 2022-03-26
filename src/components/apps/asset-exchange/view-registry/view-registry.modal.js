@@ -5,7 +5,8 @@ import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 
 import TextField from '@mui/material/TextField';
-import StorefrontIcon from '@mui/icons-material/Storefront';
+import LocalMallIcon from '@mui/icons-material/LocalMall';
+import { query_assetClassDetails } from '../../../../services/assets.service';
 
 const style = {
   position: 'absolute',
@@ -19,7 +20,7 @@ const style = {
   p: 4,
 };
 
-export default function PublishSaleModal(props) {
+export default function ViewTokenSaleDetailsModal(props) {
   const { useState } = React;
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
@@ -28,17 +29,26 @@ export default function PublishSaleModal(props) {
   const [amount, setAmount] = useState('');
   const handleSetAmount = (e) => setAmount(e.target.value);
 
-  const [price, setPrice] = useState('');
-  const handleSetPrice = (e) => setPrice(e.target.value);
+  const [owner, setOwner] = useState('')
 
   const handleSubmit = () => {
-    props.publishTokenSale(props.assetId[0], amount, price);
+    props.purchaseTokens(props.assetId, amount);
     handleClose();
   };
 
+  const handleQueryAssetClassDetails = async () => {
+    query_assetClassDetails(props.api, props.assetId, result => {
+      setOwner(result.toHuman().owner)
+    });
+  }
+
+  React.useEffect(() => {
+    if (props.assetId) handleQueryAssetClassDetails()
+  }, []);
+
   return (
     <div>
-      <StorefrontIcon onClick={handleOpen} />
+      <LocalMallIcon onClick={handleOpen} />
       <Modal
         open={open}
         onClose={handleClose}
@@ -47,30 +57,26 @@ export default function PublishSaleModal(props) {
       >
         <Box sx={style}>
           <Typography id="modal-modal-title" variant="h5" component="h2">
-            Publish Token Sale
+            Purchase Tokens
           </Typography>
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Asset Id: { props.assetId }
           </Typography>
+          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+            Owner: { owner }
+          </Typography>
           <form className="login-form">
               <div className="form-field-container">
-                <span>The number of assets to mint</span>
+                <span>The number of assets to purchase</span>
                 <TextField
                     className="login-form-field" 
                     label="amount" 
                     variant="outlined"
                     onChange={handleSetAmount}/>
-                <span>The asset sale price</span>
-                <TextField
-                    className="login-form-field" 
-                    label="price" 
-                    variant="outlined"
-                    onChange={handleSetPrice}/>
               </div>
               <Button 
                 className="login-form-button" 
                 variant="contained" 
-                // className="login-submit-btn" 
                 color="primary"
                 onClick={ handleSubmit }
                 > Submit

@@ -10,6 +10,7 @@
     "@mui/core": "^5.0.0-alpha.54",
     "@mui/icons-material": "^5.1.0",
     "@mui/material": "^5.1.0",
+    "@mui/styles": "^5.5.1",
     "@polkadot/api": "^7.13.1",
     "@polkadot/api-contract": "^7.5.1",
     "@testing-library/jest-dom": "^5.16.3",

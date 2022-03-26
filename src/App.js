@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import Home from './components/home/home.functional.component';
+import Home from './components/home/home.component';
 
 class App extends React.Component {
 

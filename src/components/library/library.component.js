@@ -17,6 +17,7 @@ import {
   query_Metadata_by_AssetId
 } from '../../services/iris-assets.service';
 import { saveAs } from 'file-saver';
+import { query_assetClassDetails } from '../../services/assets.service';
 
 export default function LibraryView(props) {
 
@@ -26,18 +27,19 @@ export default function LibraryView(props) {
       props.api,
       props.account.address,
       assetAccess => {
-        console.log(assetAccess);
-        let yourAssets = [];
-        assetAccess.forEach(([key, exposure]) => {
-          let assetId = parseInt(key.args[1].words[0]);
-          let assetClassOwner = exposure.toHuman();
-          yourAssets.push({
-            assetId: assetId,
-            assetClassOwner: assetClassOwner,
-          });
-        });
+        // console.log(assetAccess.toHuman());
+        // let yourAssets = [];
 
-        setAssets(yourAssets);
+        // assetAccess.forEach(([key, exposure]) => {
+        //   let assetId = parseInt(key.args[1].words[0]);
+        //   let assetClassOwner = exposure.toHuman();
+        //   yourAssets.push({
+        //     assetId: assetId,
+        //     assetClassOwner: assetClassOwner,
+        //   });
+        // });
+
+        setAssets(assetAccess.toHuman());
       }
     );
 
@@ -45,17 +47,24 @@ export default function LibraryView(props) {
       unsub_assetAccess();
     }, []);
 
-    const handleRequestData = (owner, asset_id) => {
+    const handleQueryAssetClassDetails = async () => {
+      
+    }
+
+    const handleRequestData = (asset_id) => {
+      query_assetClassDetails(props.api, props.assetId, result => {
+        call_requestBytes(
+          props.api,
+          props.account,
+          result.toHuman().owner,
+          asset_id,
+          props.eventLogHandler,
+          res => console.log("submitted request successfully"),
+          err => console.error(err)
+        );
+      });
       // fetch CID from runtime storage
-      call_requestBytes(
-        props.api,
-        props.account,
-        owner,
-        asset_id,
-        props.eventLogHandler,
-        res => console.log("submitted request successfully"),
-        err => console.error(err)
-      );
+      
     }
 
     const handleRpcCall = (asset_id) => {
@@ -83,7 +92,7 @@ export default function LibraryView(props) {
     }
 
     return (
-        <div>
+        <div className='container'>
           <div className='title-container'>
             <span className='section-title'>Library</span>
           </div>
@@ -91,7 +100,7 @@ export default function LibraryView(props) {
               <Table size="small" aria-label="a dense table">
                 <TableHead>
                   <TableRow>
-                    <TableCell align="right">Owner</TableCell>
+                    {/* <TableCell align="right">Owner</TableCell> */}
                     <TableCell align="right">Asset ID</TableCell>
                     <TableCell align="right">Download</TableCell>
                   </TableRow>
@@ -99,13 +108,13 @@ export default function LibraryView(props) {
                 <TableBody>
                   {assets.map((item, idx) => (
                     <TableRow key={ idx } >
-                      <TableCell align="right">{ item.assetClassOwner  }</TableCell>
-                      <TableCell align="right">{ item.assetId }</TableCell>
+                      {/* <TableCell align="right">{ item.assetClassOwner  }</TableCell> */}
+                      <TableCell align="right">{ item }</TableCell>
                       <TableCell align="right">
-                        <button onClick={() => handleRequestData(item.assetClassOwner, item.assetId)}>
+                        <button onClick={() => handleRequestData(item)}>
                           Request
                         </button>
-                        <button onClick={() => handleRpcCall(item.assetId)}>
+                        <button onClick={() => handleRpcCall(item)}>
                           Download
                         </button>
                       </TableCell>

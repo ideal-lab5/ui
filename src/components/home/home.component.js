@@ -76,31 +76,29 @@ export default function Home(props) {
     return (
         <div className="container">
             <div>
-                
-            </div>
-            <div>
-            {/* <Router> */}
                 <div>
-                    <AppBar position="static">
+                    <AppBar position="fixed" 
+                        sx={{bgcolor: "white", display: "inline-flex"}}>
                         <Toolbar variant="regular">
                             <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
                                 Iris
                             </IconButton>
-                            <div className="menu">
-                                <Typography variant="h6" color="inherit" component="div">
-                                    <Link to="/content-management">Content Management</Link>
-                                </Typography>
-                                <Typography variant="h6" color="inherit" component="div">
-                                    <Link to="/library">Library</Link>
-                                </Typography>
-                                <Typography variant="h6" color="inherit" component="div">
-                                    <Link to="/storage-management">Storage Management</Link>
-                                </Typography>
-                                <Typography variant="h6" color="inherit" component="div">
-                                    <Link to="/apps">Apps</Link>
-                                </Typography>    
-                            </div>
-                            
+                            <Typography variant="h6" color="inherit" component="div" 
+                                sx={{padding: "30px", fontSize: "16px"}}>
+                                <Link to="/content-management">Content Management</Link>
+                            </Typography>
+                            <Typography variant="h6" color="inherit" component="div"
+                                sx={{padding: "30px", fontSize: "16px"}}>
+                                <Link to="/library">Library</Link>
+                            </Typography>
+                            <Typography variant="h6" color="inherit" component="div"
+                                sx={{padding: "30px", fontSize: "16px"}}>
+                                <Link to="/storage-management">Storage Management</Link>
+                            </Typography>
+                            <Typography variant="h6" color="inherit" component="div"
+                                sx={{padding: "30px", fontSize: "16px"}}>
+                                <Link to="/apps">Apps</Link>
+                            </Typography>
                             { account === null ? '' : account.address }
                         </Toolbar>
                     </AppBar>
@@ -138,9 +136,7 @@ export default function Home(props) {
                             }/>
                     </Routes>
                 </div>
-                {/* </Router> */}
             </div>
-
         </div>
     );
 }

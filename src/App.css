@@ -48,6 +48,8 @@
 .container {
   background: white;
   height: 100vw;
+  padding: 40px;
+  margin-top: 5vw;
 }
 
 .section-title {

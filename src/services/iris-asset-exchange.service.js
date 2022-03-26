@@ -7,9 +7,11 @@ export async function call_publishTokenSale(
 }
 
 export async function call_purchaseTokens(
-    contractPromise, account, value, gasLimit, assetId, amount,
+    contractPromise, account, value, gasLimit, assetId, quantity, callback,
 ) {
-    
+    await contractPromise.tx
+        .purchaseTokens({value, gasLimit}, assetId, quantity)
+        .signAndSend(account, result => callback(result));
 }
 
 export async function read_registry(

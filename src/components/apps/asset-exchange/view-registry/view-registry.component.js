@@ -10,7 +10,8 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { query_AssetAccess_by_AccountId } from '../../../../services/iris-assets.service';
-import { Button } from '@mui/material';
+import { call_purchaseTokens } from '../../../../services/iris-asset-exchange.service';
+import ViewTokenSaleDetailsModal from './view-registry.modal';
 
 export default function RegistryView(props) {
 
@@ -30,31 +31,45 @@ export default function RegistryView(props) {
     loadAvailableAssets();
   }, []);
 
-    return (
-        <div className="container">
-          <div>
-            <span>Registry</span>
-          </div>
-          <TableContainer component={Paper}>
-          <Table size="small" aria-label="a dense table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="right">Asset Id</TableCell>
-                <TableCell align="right">Details</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {availableAssets.map((item, idx) => (
-                <TableRow key={ idx }>
-                  <TableCell align="right">{ item }</TableCell>
-                  <TableCell align="right">
-                    <Button>Go</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+
+  const handle_purchaseTokens = (assetId, amount) => {
+    call_purchaseTokens(
+      props.contractPromise, props.account, 2, 30000000, assetId, amount,
+      result => {
+        console.log(result.toHuman());
+      }
+    );
+  }
+
+  return (
+      <div className="container">
+        <div>
+          <span>Registry</span>
         </div>
-      );
+        <TableContainer component={Paper}>
+        <Table size="small" aria-label="a dense table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="right">Asset Id</TableCell>
+              <TableCell align="right">Details</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {availableAssets.map((item, idx) => (
+              <TableRow key={ idx }>
+                <TableCell align="right">{ item }</TableCell>
+                <TableCell align="right">
+                  <ViewTokenSaleDetailsModal
+                    assetId={ item[0] }
+                    api={ props.api }
+                    purchaseTokens={ handle_purchaseTokens }
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      </div>
+    );
 }
