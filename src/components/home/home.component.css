@@ -3,73 +3,11 @@
     display: flex !important;
 }
 
-.event-log-item-container {
-    /* border: 1px solid #ccc; */
-    font: 15px Courier;
-    /* overflow: auto; */
-    margin: 10px;
+.menu-link {
+    text-decoration: none;
+    color: black;
 }
 
-.event-log-item-container > span {
-    display: grid;
-} */
-
-.ipfs-container {
-    background-color: white;
-    height: 100vw;
-    /* padding: 10px; */
-    /* display: flex; */
-}
-
-.event-logs-header {
-    padding: 10px;
-}
-
-.loader-container {
-    padding: 100px;
-    text-align: center;
-}
-
-.mint_container {
-    display: grid;
-    width: 200px;
-}
-
-.assets-view-container {
-    float: left;
-}
-
-.content-container {
-    margin: 50px;
-}
-
-.sidebar {
-    text-align: center;
-    border-right: 2px rgb(173, 173, 173) solid;
-}
-
-.sidebar-item {
-    padding: 10px;
-}
-
-.account-data-container {
-    display: grid;
-}
-
-.session-info-container {
-    display: grid;
-}
-
-.session-info-container > span {
-    padding: 10px;
-}
-
-
-.App-header {
-    /* padding: 5px; */
-    background-color: #282c34;
-    flex-direction: column;
-    font-size: calc(10px + 2vmin);
-    color: white;
-    display: flow-root;
+.menu-link:hover {
+    color: wheat;
 }

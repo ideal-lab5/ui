@@ -12,7 +12,7 @@
  */
 export async function call_create(
     api, account, multiAddress, cid, name, assetId, balance,
-    success_callback,
+    isInBlockCallback, isFinalizedCallback,
 ) {
     await api.tx.irisAssets
         .create(
@@ -23,7 +23,13 @@ export async function call_create(
             assetId,
             balance
         )
-        .signAndSend(account, result => success_callback(result));
+        .signAndSend(account, result => {
+            if (result.status.isInBlock) {
+                isInBlockCallback(result);
+            } else if (result.status.isFinalized) {
+                isFinalizedCallback(result);
+            }
+        });
     }
 
 /**
@@ -36,11 +42,17 @@ export async function call_create(
  * @param {*} success_callback 
  */
 export async function call_mint(
-    api, account, beneficiary, assetId, amount, success_callback,
+    api, account, beneficiary, assetId, amount, isInBlockCallback, isFinalizedCallback,
 ) {
     await api.tx.irisAssets
         .mint(beneficiary, assetId, amount)
-        .signAndSend(account, result => success_callback(result));
+        .signAndSend(account, result => {
+            if (result.status.isInBlock) {
+                isInBlockCallback(result);
+            } else if (result.status.isFinalized) {
+                isFinalizedCallback(result);
+            }
+        });
 }
 
 export async function call_requestBytes(

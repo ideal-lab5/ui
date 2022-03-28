@@ -11,12 +11,17 @@ import {
     BrowserRouter as Router,
     Route,
     Routes,
-    Link
+    Link,
+    NavLink
   } from "react-router-dom";
 import ContentManagementView from "../content-management/content-management.component";
 import LibraryView from "../library/library.component";
 import StorageManagementView from "../storage-management/storage-management.component";
 import AssetExchangeView from "../apps/asset-exchange/asset-exchange.component";
+
+import './home.component.css';
+import { Snackbar } from "@mui/material";
+import Alert from '@mui/material/Alert';
 
 export default function Home(props) {
 
@@ -65,6 +70,25 @@ export default function Home(props) {
         setIpfs(ipfs);
     }
 
+    const handleEvent = (eventMessage) => {
+        setAlertMessage(eventMessage);
+        handleClick();
+    }
+
+    const [open, setOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
     useEffect(() => {
         if (props.port) {
@@ -76,28 +100,42 @@ export default function Home(props) {
     return (
         <div className="container">
             <div>
+                <Snackbar open={open} autoHideDuration={6000} onClose={handleClose} 
+                    anchorOrigin={{horizontal: 'right', vertical: 'top'}} key={'top right'}>
+                    <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+                        {alertMessage}
+                    </Alert>
+                </Snackbar>
                 <div>
                     <AppBar position="fixed" 
-                        sx={{bgcolor: "white", display: "inline-flex"}}>
+                        sx={{bgcolor: "gray", display: "inline-flex"}}>
                         <Toolbar variant="regular">
                             <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
                                 Iris
                             </IconButton>
                             <Typography variant="h6" color="inherit" component="div" 
                                 sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/content-management">Content Management</Link>
+                                <Link to="/content-management" className="menu-link">
+                                    Content Management
+                                </Link>
                             </Typography>
                             <Typography variant="h6" color="inherit" component="div"
                                 sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/library">Library</Link>
+                                <Link to="/library" className="menu-link">
+                                    Library
+                                </Link>
                             </Typography>
                             <Typography variant="h6" color="inherit" component="div"
                                 sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/storage-management">Storage Management</Link>
+                                <Link to="/storage-management" className="menu-link">
+                                    Storage Management
+                                </Link>
                             </Typography>
                             <Typography variant="h6" color="inherit" component="div"
                                 sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/apps">Apps</Link>
+                                <Link to="/apps" className="menu-link">
+                                    Apps
+                                </Link>
                             </Typography>
                             { account === null ? '' : account.address }
                         </Toolbar>
@@ -110,6 +148,7 @@ export default function Home(props) {
                                 account={ account }
                                 api={ api }
                                 ipfs={ ipfs }
+                                emit={ handleEvent }
                             />
                             }>
                         </Route>
@@ -132,6 +171,7 @@ export default function Home(props) {
                                 <AssetExchangeView
                                     account={ account }
                                     api={ api }
+                                    emit={ handleEvent }
                                 />
                             }/>
                     </Routes>

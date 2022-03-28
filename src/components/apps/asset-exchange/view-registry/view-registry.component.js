@@ -34,11 +34,16 @@ export default function RegistryView(props) {
 
   const handle_purchaseTokens = (assetId, amount) => {
     call_purchaseTokens(
-      props.contractPromise, props.account, 2, 30000000, assetId, amount,
+      props.contractPromise, props.account, 0, -1, assetId, amount,
       result => {
-        console.log(result.toHuman());
-      }
-    );
+        props.emit('Purchase Tokens: ' + 
+          amount + ' units of asset id ' + 
+          assetId + ' : In block');  
+    }, result => {
+      props.emit('Purchase Tokens: ' + 
+          amount + ' units of asset id ' + 
+          assetId + ' : Finalized');  
+    });
   }
 
   return (

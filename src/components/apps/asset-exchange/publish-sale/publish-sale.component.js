@@ -36,12 +36,15 @@ export default function PublishSaleComponent(props) {
     await call_publishTokenSale(
       props.contractPromise, props.account, 0, -1,
       assetId, quantity, price, result => {
-        console.log(result);
-        if (result.status.isInBlock) {
-          console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-        } else if (result.status.isFinalized) {
-          console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-        }
+        props.emit('Publish Token Sale: ' + 
+          quantity + ' units of asset id ' + 
+          assetId + ' at ' + 
+          price + ' IRIS/unit: In block');  
+    }, result => {
+      props.emit('Publish Token Sale: ' + 
+          quantity + ' units of asset id ' + 
+          assetId + ' at ' + 
+          price + ' IRIS/unit: Finalized');  
     });
   }
 

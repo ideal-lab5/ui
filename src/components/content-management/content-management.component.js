@@ -27,23 +27,18 @@ export default function ContentManagementView(props) {
     );
 
     useEffect(() => {
-        unsub_assetClasses();
+      if (props.api) unsub_assetClasses();
     }, []);
 
     const handleMint = async (beneficiary, asset_id, amount) => {
       await call_mint(
-        props.api,
-        props.account,
-        beneficiary,
-        asset_id,
-        amount,
+        props.api, props.account, beneficiary, asset_id, amount,
         result => {
-          if (result.status.isInBlock) {
-            console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-          } else if (result.status.isFinalized) {
-            console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-          }
-        });
+          props.emit('Mint: ' + amount + ' assets with id ' + asset_id + ': in block');
+        }, result => {
+          props.emit('Mint: ' + amount + ' assets with id ' + asset_id + ': finalized');
+        },
+      );
     };
 
     const captureFile = (e) => {
@@ -68,21 +63,16 @@ export default function ContentManagementView(props) {
         const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
         const assetId = Math.floor(Math.random()*1000);
         await call_create(
-          props.api, 
-          props.account,
-          multiAddress, 
-          res.path, // the cid
-          name,
-          assetId,
-          1,
+          props.api, props.account, multiAddress, res.path, // the cid
+          name, assetId, 1,
           result => {
-            if (result.status.isInBlock) {
-              console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-            } else if (result.status.isFinalized) {
-              console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-              unsub_assetClasses();
-            }
-          });
+            props.emit('Create: asset with id ' + assetId + ': in block');
+          },
+          result => { 
+            props.emit('Create: asset with id ' + assetId + ': finalized');
+            unsub_assetClasses();
+          }
+        );
       }
     }
   

@@ -75,12 +75,14 @@ export default function AssetExchangeView(props) {
                   api={ props.api }
                   account={ props.account }
                   contractPromise={ contractPromise }
+                  emit={ props.emit }
                 /> :
                 <RegistryView
                   api={ props.api }
                   account={ props.account }
                   contractPromise={ contractPromise }
                   contractAddress={ address }
+                  emit={ props.emit }
                 /> }
             </div>
           </div>
