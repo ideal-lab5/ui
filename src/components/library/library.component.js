@@ -24,21 +24,8 @@ export default function LibraryView(props) {
     const [assets, setAssets] = useState([]);
     
     const unsub_assetAccess = async() => await query_AssetAccess_by_AccountId(
-      props.api,
-      props.account.address,
+      props.api, props.account.address,
       assetAccess => {
-        // console.log(assetAccess.toHuman());
-        // let yourAssets = [];
-
-        // assetAccess.forEach(([key, exposure]) => {
-        //   let assetId = parseInt(key.args[1].words[0]);
-        //   let assetClassOwner = exposure.toHuman();
-        //   yourAssets.push({
-        //     assetId: assetId,
-        //     assetClassOwner: assetClassOwner,
-        //   });
-        // });
-
         setAssets(assetAccess.toHuman());
       }
     );
@@ -47,31 +34,24 @@ export default function LibraryView(props) {
       unsub_assetAccess();
     }, []);
 
-    const handleQueryAssetClassDetails = async () => {
-      
-    }
-
-    const handleRequestData = (asset_id) => {
-      query_assetClassDetails(props.api, props.assetId, result => {
+    const handleRequestData = (assetId) => {
         call_requestBytes(
           props.api,
           props.account,
-          result.toHuman().owner,
-          asset_id,
-          props.eventLogHandler,
-          res => console.log("submitted request successfully"),
-          err => console.error(err)
+          assetId,
+          result => {
+            props.emit('Data request initiated for asset with id ' + assetId);
+          }, result => {
+            props.emit('Data ready for asset with id ' + assetId);
+          }
         );
-      });
-      // fetch CID from runtime storage
-      
     }
 
-    const handleRpcCall = (asset_id) => {
+    const handleRpcCall = (assetId) => {
       query_Metadata_by_AssetId(
-        props.api, asset_id,
+        props.api, assetId,
         cid => {
-          let _cid = hexToAscii(String(cid).substring(2));
+          let _cid = hexToAscii(String(cid));
           console.log("Found CID " + _cid);
           rpc_retrieveBytes(props.api, _cid,
             res => { 

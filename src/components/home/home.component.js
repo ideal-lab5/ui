@@ -157,6 +157,7 @@ export default function Home(props) {
                             <LibraryView
                                 account={ account }
                                 api={ api }
+                                emit={ handleEvent }
                             />
                         } />
                         <Route exact path="/storage-management"

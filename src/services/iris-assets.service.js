@@ -1,15 +1,4 @@
 // Functions to Call Extrinsics
-/**
- * Call the IrisAssets::create extrinsic
- * @param {} api 
- * @param {*} account 
- * @param {*} multiAddress 
- * @param {*} cid 
- * @param {*} name 
- * @param {*} assetId 
- * @param {*} balance 
- * @param {*} success_callback 
- */
 export async function call_create(
     api, account, multiAddress, cid, name, assetId, balance,
     isInBlockCallback, isFinalizedCallback,
@@ -32,17 +21,9 @@ export async function call_create(
         });
     }
 
-/**
- * Call the IrisAssets::mint extrinsic
- * @param {*} api 
- * @param {*} account 
- * @param {*} beneficiary 
- * @param {*} assetId 
- * @param {*} amount 
- * @param {*} success_callback 
- */
 export async function call_mint(
-    api, account, beneficiary, assetId, amount, isInBlockCallback, isFinalizedCallback,
+    api, account, beneficiary, assetId, amount, 
+    isInBlockCallback, isFinalizedCallback,
 ) {
     await api.tx.irisAssets
         .mint(beneficiary, assetId, amount)
@@ -56,14 +37,18 @@ export async function call_mint(
 }
 
 export async function call_requestBytes(
-    api, account, owner, assetId, 
-    logs_callback, success_callback, error_callback
+    api, account, assetId, 
+    isInBlockCallback, isFinalizedCallback,
 ) {
     await api.tx.irisAssets
-        .requestBytes(owner, assetId)
-        .signAndSend(account, logs_callback)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+        .requestBytes(assetId)
+        .signAndSend(account, result => {
+            if (result.status.isInBlock) {
+                isInBlockCallback(result);
+            } else if (result.status.isFinalized) {
+                isFinalizedCallback(result);
+            }
+        });
 }
 
 // Functions to Call The RPC Endpoint
@@ -90,7 +75,7 @@ export async function query_Metadata_by_AssetId(
     api, asset_id, subscription_callback,
 ) {
     return api === null ? null : 
-        await api.query.irisAssets.metadata.entries(asset_id, (metadata) =>
+        await api.query.irisAssets.metadata(asset_id, (metadata) =>
             subscription_callback(metadata)
         );
 }
