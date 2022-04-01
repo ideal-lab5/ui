@@ -45,8 +45,8 @@ export default function Home(props) {
                   description: 'retrieve bytes from iris',
                   params: [
                     {
-                      name: 'message',
-                      type: 'Bytes'
+                      name: 'asset_id',
+                      type: 'u32'
                     }
                   ],
                   type: 'Bytes'

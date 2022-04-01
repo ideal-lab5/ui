@@ -53,9 +53,9 @@ export async function call_requestBytes(
 
 // Functions to Call The RPC Endpoint
 export async function rpc_retrieveBytes(
-    api, message, success_callback, error_callback
+    api, assetId, success_callback, error_callback
 ) {
-    await api.rpc.iris.retrieveBytes(message)
+    await api.rpc.iris.retrieveBytes(assetId)
         .then(res => success_callback(res))
         .catch(err => error_callback(err));
   }

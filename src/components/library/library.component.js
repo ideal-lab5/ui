@@ -49,24 +49,19 @@ export default function LibraryView(props) {
 
     const handleRpcCall = (assetId) => {
       query_Metadata_by_AssetId(
-        props.api, assetId,
-        cid => {
-          let _cid = hexToAscii(String(cid));
-          console.log("Found CID " + _cid);
-          rpc_retrieveBytes(props.api, _cid,
-            res => { 
-              console.log(JSON.stringify(res));
-              download(res, _cid);
+        props.api, assetId, result => {
+          let cid = result.toHuman();
+          rpc_retrieveBytes(
+            props.api, assetId,
+            res => {
+              download(res, cid);
             },
             err => console.error(err));
-        },
-        err => console.error(err)
-    )}
+        }
+      );
+    }
 
     const download = (file, filename) => {
-      // const mime = require('mime-types');
-      // const type = mime.lookup(filename);
-      // const blob = new Blob([file], {type: type});
       const blob = new Blob([file]);
       saveAs(blob, filename);
     }
