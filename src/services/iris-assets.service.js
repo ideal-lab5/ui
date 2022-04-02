@@ -1,9 +1,9 @@
 // Functions to Call Extrinsics
 export async function call_create(
     api, account, multiAddress, cid, name, assetId, balance,
-    success_callback,
+    isInBlockCallback, isFinalizedCallback,
 ) {
-    await api.tx.iris
+    await api.tx.irisAssets
         .create(
             account.address, 
             multiAddress, 
@@ -12,56 +12,72 @@ export async function call_create(
             assetId,
             balance
         )
-        .signAndSend(account, result => success_callback(result));
+        .signAndSend(account, result => {
+            if (result.status.isInBlock) {
+                isInBlockCallback(result);
+            } else if (result.status.isFinalized) {
+                isFinalizedCallback(result);
+            }
+        });
     }
 
 export async function call_mint(
-    api, account, beneficiary, assetId, amount, success_callback,
+    api, account, beneficiary, assetId, amount, 
+    isInBlockCallback, isFinalizedCallback,
 ) {
-    await api.tx.iris
+    await api.tx.irisAssets
         .mint(beneficiary, assetId, amount)
-        .signAndSend(account, result => success_callback(result));
+        .signAndSend(account, result => {
+            if (result.status.isInBlock) {
+                isInBlockCallback(result);
+            } else if (result.status.isFinalized) {
+                isFinalizedCallback(result);
+            }
+        });
 }
 
 export async function call_requestBytes(
-    api, account, owner, assetId, 
-    logs_callback, success_callback, error_callback
+    api, account, assetId, 
+    isInBlockCallback, isFinalizedCallback,
 ) {
-    await api.tx.iris
-        .requestBytes(owner, assetId)
-        .signAndSend(account, logs_callback)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+    await api.tx.irisAssets
+        .requestBytes(assetId)
+        .signAndSend(account, result => {
+            if (result.status.isInBlock) {
+                isInBlockCallback(result);
+            } else if (result.status.isFinalized) {
+                isFinalizedCallback(result);
+            }
+        });
 }
 
 // Functions to Call The RPC Endpoint
 export async function rpc_retrieveBytes(
-    api, message, success_callback, error_callback
+    api, assetId, success_callback, error_callback
 ) {
-    await api.rpc.iris.retrieveBytes(message)
+    await api.rpc.iris.retrieveBytes(assetId)
         .then(res => success_callback(res))
         .catch(err => error_callback(err));
-    // this.download(res, message);
   }
 
 // Functions to Query Runtime Storage
 // read AssetClassOwnership by account id
-export async function query_AssetClassOwnership_by_AccountId(
+export async function query_AssetClassOwnership(
     api, address, subscription_callback
 ) {
     return api === null ? null : 
-        await api.query.iris.assetClassOwnership.entries(address, (assetAccess) =>
-            subscription_callback(assetAccess)
+        await api.query.irisAssets.assetClassOwnership(address, assetAccess =>
+            subscription_callback([assetAccess])
         );
 }
 
-export async function query_AssetClassOwnership_by_AccountIdAndAssetId(
-    api, address, assetId, 
-    success_callback, error_callback
+export async function query_Metadata_by_AssetId(
+    api, asset_id, subscription_callback,
 ) {
-    await api.query.iris.assetClassOwnership(address, assetId)
-        .then(res => success_callback(res))
-        .catch(err => error_callback(err));
+    return api === null ? null : 
+        await api.query.irisAssets.metadata(asset_id, (metadata) =>
+            subscription_callback(metadata)
+        );
 }
 
 // read AssetAccess by account id
@@ -70,7 +86,7 @@ export async function query_AssetClassOwnership_by_AccountIdAndAssetId(
 export async function query_AssetAccess_by_AccountId(
     api, address, subscription_callback) {
     return api === null ? null : 
-        api.query.iris.assetAccess.entries(address, (assetAccess) => 
+        api.query.irisAssets.assetAccess(address, (assetAccess) => 
             subscription_callback(assetAccess)
         );
 }
@@ -79,7 +95,7 @@ export async function query_AssetIds(
     api, subscription_callback
 ) {
     return api === null ? null : 
-        api.query.iris.assetIds((assetIds) => 
+        api.query.irisAssets.assetIds((assetIds) => 
             subscription_callback(assetIds)
         );
 }

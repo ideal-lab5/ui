@@ -4,19 +4,6 @@
   height: 100vw;
 }
 
-.App-header {
-  padding: 5px;
-  background-color: #282c34;
-  flex-direction: column;
-  font-size: calc(10px + 2vmin);
-  color: white;
-  display: flow-root;
-}
-
-.App-header > button {
-  float: right;
-}
-
 .App-body {
   /* margin: 10px; */
   display: grid;
@@ -55,5 +42,25 @@
 }
 
 .form-field-container {
+  display: grid;
+}
+
+.container {
+  background: white;
+  height: 100vw;
+  padding: 40px;
+  margin-top: 5vw;
+}
+
+.section-title {
+  font-size: 3.5em;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.title-container {
+ text-align: center; 
+}
+
+.grid {
   display: grid;
 }

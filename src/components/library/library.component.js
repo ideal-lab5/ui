@@ -9,12 +9,19 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
+<<<<<<< HEAD
+=======
 import { hexToAscii } from '../../util/utils';
+>>>>>>> upstream/master
 import { 
   call_requestBytes, 
   rpc_retrieveBytes, 
   query_AssetAccess_by_AccountId, 
+<<<<<<< HEAD
+  query_Metadata_by_AssetId
+=======
   query_AssetClassOwnership_by_AccountIdAndAssetId
+>>>>>>> upstream/master
 } from '../../services/iris-assets.service';
 import { saveAs } from 'file-saver';
 
@@ -23,6 +30,11 @@ export default function LibraryView(props) {
     const [assets, setAssets] = useState([]);
     
     const unsub_assetAccess = async() => await query_AssetAccess_by_AccountId(
+<<<<<<< HEAD
+      props.api, props.account.address,
+      assetAccess => {
+        setAssets(assetAccess.toHuman());
+=======
       props.api,
       props.account.address,
       assetAccess => {
@@ -34,11 +46,45 @@ export default function LibraryView(props) {
             asset_id: asset_id
           }]);
         })
+>>>>>>> upstream/master
       }
     );
 
     useEffect(() => {
       unsub_assetAccess();
+<<<<<<< HEAD
+    }, []);
+
+    const handleRequestData = (assetId) => {
+        call_requestBytes(
+          props.api,
+          props.account,
+          assetId,
+          result => {
+            props.emit('Data request initiated for asset with id ' + assetId);
+          }, result => {
+            props.emit('Data ready for asset with id ' + assetId);
+          }
+        );
+    }
+
+    const handleRpcCall = (assetId) => {
+      query_Metadata_by_AssetId(
+        props.api, assetId, result => {
+          let cid = result.toHuman();
+          rpc_retrieveBytes(
+            props.api, assetId,
+            res => {
+              download(res, cid);
+            },
+            err => console.error(err));
+        }
+      );
+    }
+
+    const download = (file, filename) => {
+      const blob = new Blob([file]);
+=======
     }, [props]);
 
     const handleRequestData = (owner, asset_id) => {
@@ -74,19 +120,24 @@ export default function LibraryView(props) {
       const mime = require('mime-types');
       const type = mime.lookup(filename);
       const blob = new Blob([file], {type: type});
+>>>>>>> upstream/master
       saveAs(blob, filename);
     }
 
     return (
-        <div>
-          <div>
-            <span>Library</span>
+        <div className='container'>
+          <div className='title-container'>
+            <span className='section-title'>Library</span>
           </div>
           <TableContainer component={Paper}>
               <Table size="small" aria-label="a dense table">
                 <TableHead>
                   <TableRow>
+<<<<<<< HEAD
+                    {/* <TableCell align="right">Owner</TableCell> */}
+=======
                     <TableCell align="right">Owner</TableCell>
+>>>>>>> upstream/master
                     <TableCell align="right">Asset ID</TableCell>
                     <TableCell align="right">Download</TableCell>
                   </TableRow>
@@ -94,6 +145,15 @@ export default function LibraryView(props) {
                 <TableBody>
                   {assets.map((item, idx) => (
                     <TableRow key={ idx } >
+<<<<<<< HEAD
+                      {/* <TableCell align="right">{ item.assetClassOwner  }</TableCell> */}
+                      <TableCell align="right">{ item }</TableCell>
+                      <TableCell align="right">
+                        <button onClick={() => handleRequestData(item)}>
+                          Request
+                        </button>
+                        <button onClick={() => handleRpcCall(item)}>
+=======
                       <TableCell align="right">{ item.owner  }</TableCell>
                       <TableCell align="right">{ item.asset_id }</TableCell>
                       <TableCell align="right">
@@ -101,6 +161,7 @@ export default function LibraryView(props) {
                           Request
                         </button>
                         <button onClick={() => handleRpcCall(item.owner, item.asset_id)}>
+>>>>>>> upstream/master
                           Download
                         </button>
                       </TableCell>

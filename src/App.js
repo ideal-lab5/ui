@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import HomeComponent from './components/home/home.component';
+import Home from './components/home/home.component';
 
 class App extends React.Component {
 
@@ -51,17 +51,14 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <span>IRIS</span>
-          { this.state.connect === true ? 
-              <button onClick={this.handleRefresh.bind(this)}>
-                Disconnect
-              </button> : '' }
-        </header>
         <div className="App-body">
           { this.state.connect === true ?
             <div>
-              <HomeComponent host={this.state.host} port={this.state.port} address={this.state.address} />
+              <Home
+                host={this.state.host} 
+                port={this.state.port} 
+                address={this.state.address}
+              />
             </div>
           : 
           <div className="login-component">

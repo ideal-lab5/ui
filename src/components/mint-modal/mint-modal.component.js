@@ -52,9 +52,6 @@ export default function MintModal(props) {
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Asset Id: { props.assetId }
           </Typography>
-          <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-            { props.cid }
-          </Typography>
           <form className="login-form">
               <div className="form-field-container">
                 <span>The receipient's address</span>
@@ -72,8 +69,7 @@ export default function MintModal(props) {
               </div>
               <Button 
                 className="login-form-button" 
-                variant="contained" 
-                className="login-submit-btn" 
+                variant="contained"
                 color="primary"
                 onClick={ handleMint }
                 > Submit

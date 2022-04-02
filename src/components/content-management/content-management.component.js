@@ -11,49 +11,34 @@ import Paper from '@material-ui/core/Paper';
 
 import MintModal from '../mint-modal/mint-modal.component';
 
-import { call_create, call_mint, query_AssetClassOwnership_by_AccountId } from '../../services/iris-assets.service';
+import { call_create, call_mint, query_AssetClassOwnership } from '../../services/iris-assets.service';
 
 export default function ContentManagementView(props) {
 
     const [assetClasses, setAssetClasses] = useState([]);
 
-    const unsub_assetClasses = async () => await query_AssetClassOwnership_by_AccountId(
+    const unsub_assetClasses = async () => await query_AssetClassOwnership(
       props.api, 
       props.account.address, 
       assetClassesRaw => {
-        let newAssetClasses = []
-        assetClassesRaw.forEach(([key, exposure]) => {
-          let cid = exposure.toHuman()
-          let assetId = parseInt(key.args[1].words[0]);
-          newAssetClasses.push(
-            {
-                cid: cid,
-                assetId: assetId,
-              }
-          );
-        });
-        setAssetClasses(newAssetClasses);
+        let assetClassIds = assetClassesRaw[0].map(item => item.words);
+        setAssetClasses(assetClassIds);
       }
     );
 
     useEffect(() => {
-        unsub_assetClasses();
+      if (props.api) unsub_assetClasses();
     }, []);
 
-    const handleMint = async (beneficiary, cid, amount) => {
+    const handleMint = async (beneficiary, asset_id, amount) => {
       await call_mint(
-        props.api,
-        props.account,
-        beneficiary,
-        cid,
-        amount,
+        props.api, props.account, beneficiary, asset_id, amount,
         result => {
-          if (result.status.isInBlock) {
-            console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-          } else if (result.status.isFinalized) {
-            console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-          }
-        });
+          props.emit('Mint: ' + amount + ' assets with id ' + asset_id + ': in block');
+        }, result => {
+          props.emit('Mint: ' + amount + ' assets with id ' + asset_id + ': finalized');
+        },
+      );
     };
 
     const captureFile = (e) => {
@@ -78,21 +63,16 @@ export default function ContentManagementView(props) {
         const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
         const assetId = Math.floor(Math.random()*1000);
         await call_create(
-          props.api, 
-          props.account,
-          multiAddress, 
-          res.path, // the cid
-          name,
-          assetId,
-          1,
+          props.api, props.account, multiAddress, res.path, // the cid
+          name, assetId, 1,
           result => {
-            if (result.status.isInBlock) {
-              console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-            } else if (result.status.isFinalized) {
-              console.log(`Transaction finalized at blockHash ${result.status.asFinalized}`);
-              unsub_assetClasses();
-            }
-          });
+            props.emit('Create: asset with id ' + assetId + ': in block');
+          },
+          result => { 
+            props.emit('Create: asset with id ' + assetId + ': finalized');
+            unsub_assetClasses();
+          }
+        );
       }
     }
   
@@ -102,8 +82,8 @@ export default function ContentManagementView(props) {
 
     return (
         <div className="container">
-          <div>
-            <span>Content Management</span>
+          <div className='title-container'>
+            <span className='section-title'>Content Management</span>
           </div>
           <div>
             <input 
@@ -125,19 +105,16 @@ export default function ContentManagementView(props) {
                 <TableHead>
                   <TableRow>
                     <TableCell align="right">Asset Id</TableCell>
-                    <TableCell align="right">CID</TableCell>
                     <TableCell align="right">Mint</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {assetClasses.map((item, idx) => (
                     <TableRow key={ idx }>
-                      <TableCell align="right">{ item.assetId  }</TableCell>
-                      <TableCell align="right">{ item.cid }</TableCell>
+                      <TableCell align="right">{ item[0]  }</TableCell>
                       <TableCell align="right">
                         <MintModal
-                          assetId={ item.assetId } 
-                          cid={ item.cid }
+                          assetId={ item[0] }
                           mint={ handleMint } 
                         />
                       </TableCell>

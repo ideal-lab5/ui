@@ -12,16 +12,12 @@ import Paper from '@material-ui/core/Paper';
 
 import { useState, useEffect } from 'react';
 
-import { hexToAscii } from '../../util/utils';
 import { query_AssetIds } from '../../services/iris-assets.service';
 
 import './storage-management.component.css';
 import { 
   call_joinStoragePool, 
   query_StorageProviders,
-  query_ActiveEra,
-  query_ErasRewardPoints,
-  query_CurrentEra
  } from '../../services/iris-session.service';
 
 export default function StorageManagementView(props) {
@@ -43,13 +39,6 @@ export default function StorageManagementView(props) {
       unsub_assetIds();
       unsub_storedAssetIds();
 
-      // return () => {
-      //   unsub_activeEraIndex.unsubscribe();
-      //   unsub_assetIds.unsubscribe();
-      //   unsub_storedAssetIds.unsubscribe();
-      //   unsub_currentEraIndex.unsubscribe();
-      //   unsub_erasRewardPoints.unsubscribe();
-      // };
     }, [props]);
 
   // gross
@@ -117,9 +106,9 @@ export default function StorageManagementView(props) {
     }
 
     return (
-        <div className='storage-management-container'>
-          <div className='era-info-container'>
-            <span>Storage Management</span>
+        <div className='container'>
+          <div className='era-info-container title-container'>
+            <span className='section-title'>Storage Management</span>
             {/* <span>Current (Planned) Session: { currentEra }</span>
             <span>Active (Rewarded) Session: { activeEra }</span> */}
             <span>Accumulated Reward points: </span>
