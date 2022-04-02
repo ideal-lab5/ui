@@ -5,7 +5,6 @@ import { Abi, ContractPromise } from '@polkadot/api-contract';
 import './asset-exchange.component.css';
 import PublishSaleComponent from './publish-sale/publish-sale.component';
 import RegistryView from './view-registry/view-registry.component';
-import { call_publishTokenSale } from '../../../services/iris-asset-exchange.service';
 
 export default function AssetExchangeView(props) {
 

@@ -12,16 +12,12 @@ import Paper from '@material-ui/core/Paper';
 
 import { useState, useEffect } from 'react';
 
-import { hexToAscii } from '../../util/utils';
 import { query_AssetIds } from '../../services/iris-assets.service';
 
 import './storage-management.component.css';
 import { 
   call_joinStoragePool, 
   query_StorageProviders,
-  query_ActiveEra,
-  query_ErasRewardPoints,
-  query_CurrentEra
  } from '../../services/iris-session.service';
 
 export default function StorageManagementView(props) {

@@ -12,7 +12,6 @@ import {
     Route,
     Routes,
     Link,
-    NavLink
   } from "react-router-dom";
 import ContentManagementView from "../content-management/content-management.component";
 import LibraryView from "../library/library.component";

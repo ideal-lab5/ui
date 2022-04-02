@@ -9,7 +9,6 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
-import { hexToAscii } from '../../util/utils';
 import { 
   call_requestBytes, 
   rpc_retrieveBytes, 
@@ -17,7 +16,6 @@ import {
   query_Metadata_by_AssetId
 } from '../../services/iris-assets.service';
 import { saveAs } from 'file-saver';
-import { query_assetClassDetails } from '../../services/assets.service';
 
 export default function LibraryView(props) {
 
