@@ -9,13 +9,18 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 
-import MintModal from '../mint-modal/mint-modal.component';
+import MintModal from './mint-modal/mint-modal.component';
 
 import { call_create, call_mint, query_AssetClassOwnership } from '../../services/iris-assets.service';
+import CreateModal from './create-modal/create-modal.component';
+import { call_registerRule, query_registry } from '../../services/iris-ejection.service';
+import { Button } from '@mui/material';
+import RuleExecutorRegistryModal from './rule-executor.modal';
 
 export default function ContentManagementView(props) {
 
     const [assetClasses, setAssetClasses] = useState([]);
+    const [ruleExecutorAddress, setRuleExecutorAddress] = useState('');
 
     const unsub_assetClasses = async () => await query_AssetClassOwnership(
       props.api, 
@@ -40,45 +45,54 @@ export default function ContentManagementView(props) {
         },
       );
     };
-
-    const captureFile = (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      const file = e.target.files[0];
-      let reader = new FileReader();
-      reader.onloadend = async () => {
-        const resultString = arrayBufferToString(reader.result);
-        await handleAddBytes(resultString, file.name);
-      };
-      reader.readAsArrayBuffer(file);
-    }
   
-    const handleAddBytes = async (bytes, name) => {
-      const res = await props.ipfs.add(bytes);
+    const handleCreate = async (bytes, dataspaceId, assetId) => {
       const ipv4 = process.env.REACT_APP_IPV4;
-      if (ipv4 === undefined) {
-        console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
-      } else {
-        const id = await props.ipfs.id();
-        const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
-        const assetId = Math.floor(Math.random()*1000);
-        await call_create(
-          props.api, props.account, multiAddress, res.path, // the cid
-          name, assetId, 1,
-          result => {
-            props.emit('Create: asset with id ' + assetId + ': in block');
-          },
-          result => { 
-            props.emit('Create: asset with id ' + assetId + ': finalized');
-            unsub_assetClasses();
-          }
-        );
-      }
+      // if (ipv4 === undefined) {
+      //   console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
+      // } else {
+      // const res = await props.ipfs.add(bytes);
+      // const id = await props.ipfs.id();
+      const res = '';
+      const id = '';
+      const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
+      const cid = 'TODO';
+      await call_create(
+        props.api, props.account, multiAddress, cid,
+        dataspaceId, assetId, 1,
+        result => {
+          props.emit('Create: asset with id ' + assetId + ': in block');
+        },
+        result => { 
+          props.emit('Create: asset with id ' + assetId + ': finalized');
+          unsub_assetClasses();
+        }
+      );
+      // }
     }
-  
-    const arrayBufferToString = (arrayBuffer) => {
-      return new TextDecoder("utf-8").decode(new Uint8Array(arrayBuffer));
-    }  
+
+    const handleQueryRuleExecutor = async(assetId) => {
+      query_registry(props.api, assetId, result => {
+        let readableResult = result.toHuman();
+        if (readableResult !== null) {
+          setRuleExecutorAddress(readableResult)
+        } else {
+          setRuleExecutorAddress('no rule registered')
+        }
+      })
+    }
+
+    const handleRegisterRule = async (assetId, ruleAddress) => {
+      await call_registerRule(props.api, props.account, ruleAddress, assetId,
+        result => {
+          props.emit('Register rule address ' + ruleAddress + ' for asset with id ' + assetId + ': in block');
+        },
+        result => { 
+          props.emit('Register rule address ' + ruleAddress + ' for asset with id ' + assetId + ': finalized');
+          handleQueryRuleExecutor();
+        }
+      );
+    }
 
     return (
         <div className="container">
@@ -86,13 +100,9 @@ export default function ContentManagementView(props) {
             <span className='section-title'>Content Management</span>
           </div>
           <div>
-            <input 
-              id="file-input" 
-              className="file-input" 
-              type="file" 
-              onChange={captureFile} 
-              value="" 
-              autoComplete={"new-password"}
+            Add Data
+            <CreateModal
+              handleCreate={ handleCreate }
             />
           </div>
           { assetClasses.length === 0 ? 
@@ -106,6 +116,8 @@ export default function ContentManagementView(props) {
                   <TableRow>
                     <TableCell align="right">Asset Id</TableCell>
                     <TableCell align="right">Mint</TableCell>
+                    <TableCell align="right">Rule Executor Address</TableCell>
+                    <TableCell align="right">Register Rule</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -116,6 +128,28 @@ export default function ContentManagementView(props) {
                         <MintModal
                           assetId={ item[0] }
                           mint={ handleMint } 
+                        />
+                      </TableCell>
+                      <TableCell align="right">
+                        { ruleExecutorAddress === '' ? 
+                        <div>
+                          <Button
+                            className="login-form-button" 
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleQueryRuleExecutor(item[0])}
+                          >
+                            Query rule executor address
+                          </Button>
+                        </div> : 
+                        <div>
+                          { ruleExecutorAddress }
+                        </div> }
+                      </TableCell>
+                      <TableCell align="right">
+                        <RuleExecutorRegistryModal
+                          assetId = { item[0] }
+                          registerRule = { handleRegisterRule }
                         />
                       </TableCell>
                     </TableRow>

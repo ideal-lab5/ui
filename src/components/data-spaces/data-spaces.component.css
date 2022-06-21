@@ -1,0 +1,11 @@
+.dataspace-query-results {
+    display: grid !important;
+}
+
+.dataspace-query-results > Button {
+    display: contents;
+}
+
+.dataspace-create-container {
+    display: flex !important;
+}

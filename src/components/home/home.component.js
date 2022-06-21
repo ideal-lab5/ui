@@ -21,6 +21,7 @@ import AssetExchangeView from "../apps/asset-exchange/asset-exchange.component";
 import './home.component.css';
 import { Snackbar } from "@mui/material";
 import Alert from '@mui/material/Alert';
+import DataSpacesView from "../data-spaces/data-spaces.component";
 
 export default function Home(props) {
 
@@ -35,9 +36,6 @@ export default function Home(props) {
         const provider = new WsProvider(`ws://${host}:${port}`);
         const api = await ApiPromise.create({
             provider,
-            types: {
-                DataCommand: '_DataCommand',
-            },
             rpc: {
               iris: {
                 retrieveBytes: {
@@ -114,6 +112,12 @@ export default function Home(props) {
                             </IconButton>
                             <Typography variant="h6" color="inherit" component="div" 
                                 sx={{padding: "30px", fontSize: "16px"}}>
+                                <Link to="/data-spaces" className="menu-link">
+                                    Data Spaces
+                                </Link>
+                            </Typography>
+                            <Typography variant="h6" color="inherit" component="div" 
+                                sx={{padding: "30px", fontSize: "16px"}}>
                                 <Link to="/content-management" className="menu-link">
                                     Content Management
                                 </Link>
@@ -124,7 +128,7 @@ export default function Home(props) {
                                     Library
                                 </Link>
                             </Typography>
-                            <Typography variant="h6" color="inherit" component="div"
+                            {/* <Typography variant="h6" color="inherit" component="div"
                                 sx={{padding: "30px", fontSize: "16px"}}>
                                 <Link to="/storage-management" className="menu-link">
                                     Storage Management
@@ -135,20 +139,29 @@ export default function Home(props) {
                                 <Link to="/apps" className="menu-link">
                                     Apps
                                 </Link>
-                            </Typography>
+                            </Typography> */}
                             { account === null ? '' : account.address }
                         </Toolbar>
                     </AppBar>
 
-                    <Routes> 
+                    <Routes>
+                        <Route exact path="/data-spaces"
+                            element={
+                                <DataSpacesView
+                                    account={ account }
+                                    api={ api }
+                                    emit={ handleEvent }
+                                />
+                            }>
+                        </Route>
                         <Route exact path="/content-management"
                             element={
                                 <ContentManagementView
-                                account={ account }
-                                api={ api }
-                                ipfs={ ipfs }
-                                emit={ handleEvent }
-                            />
+                                    account={ account }
+                                    api={ api }
+                                    ipfs={ ipfs }
+                                    emit={ handleEvent }
+                                />
                             }>
                         </Route>
                         <Route exact path="/Library" 
@@ -159,7 +172,7 @@ export default function Home(props) {
                                 emit={ handleEvent }
                             />
                         } />
-                        <Route exact path="/storage-management"
+                        {/* <Route exact path="/storage-management"
                             element={
                                 <StorageManagementView
                                     account={ account }
@@ -173,7 +186,7 @@ export default function Home(props) {
                                     api={ api }
                                     emit={ handleEvent }
                                 />
-                            }/>
+                            }/> */}
                     </Routes>
                 </div>
             </div>
