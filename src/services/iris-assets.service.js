@@ -1,14 +1,14 @@
 // Functions to Call Extrinsics
 export async function call_create(
-    api, account, multiAddress, cid, name, assetId, balance,
+    api, account, multiAddress, cid, dataspaceId, assetId, balance,
     isInBlockCallback, isFinalizedCallback,
 ) {
     await api.tx.irisAssets
         .create(
             account.address, 
             multiAddress, 
-            cid, 
-            name, 
+            cid,
+            dataspaceId,
             assetId,
             balance
         )
