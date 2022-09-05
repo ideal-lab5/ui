@@ -3,7 +3,7 @@ export async function call_create(
     api, account, multiAddress, cid, dataspaceId, assetId, balance,
     isInBlockCallback, isFinalizedCallback,
 ) {
-    await api.tx.irisAssets
+    await api.tx.dataAssets
         .create(
             account.address, 
             multiAddress, 
@@ -25,7 +25,7 @@ export async function call_mint(
     api, account, beneficiary, assetId, amount, 
     isInBlockCallback, isFinalizedCallback,
 ) {
-    await api.tx.irisAssets
+    await api.tx.dataAssets
         .mint(beneficiary, assetId, amount)
         .signAndSend(account, result => {
             if (result.status.isInBlock) {
@@ -40,7 +40,7 @@ export async function call_requestBytes(
     api, account, assetId, 
     isInBlockCallback, isFinalizedCallback,
 ) {
-    await api.tx.irisAssets
+    await api.tx.dataAssets
         .requestBytes(assetId)
         .signAndSend(account, result => {
             if (result.status.isInBlock) {
@@ -66,7 +66,7 @@ export async function query_AssetClassOwnership(
     api, address, subscription_callback
 ) {
     return api === null ? null : 
-        await api.query.irisAssets.assetClassOwnership(address, assetAccess =>
+        await api.query.dataAssets.assetClassOwnership(address, assetAccess =>
             subscription_callback([assetAccess])
         );
 }
@@ -75,7 +75,7 @@ export async function query_Metadata_by_AssetId(
     api, asset_id, subscription_callback,
 ) {
     return api === null ? null : 
-        await api.query.irisAssets.metadata(asset_id, (metadata) =>
+        await api.query.dataAssets.metadata(asset_id, (metadata) =>
             subscription_callback(metadata)
         );
 }
@@ -86,7 +86,7 @@ export async function query_Metadata_by_AssetId(
 export async function query_AssetAccess_by_AccountId(
     api, address, subscription_callback) {
     return api === null ? null : 
-        api.query.irisAssets.assetAccess(address, (assetAccess) => 
+        api.query.dataAssets.assetAccess(address, (assetAccess) => 
             subscription_callback(assetAccess)
         );
 }
@@ -95,7 +95,7 @@ export async function query_AssetIds(
     api, subscription_callback
 ) {
     return api === null ? null : 
-        api.query.irisAssets.assetIds((assetIds) => 
+        api.query.dataAssets.assetIds((assetIds) => 
             subscription_callback(assetIds)
         );
 }

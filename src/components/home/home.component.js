@@ -15,8 +15,8 @@ import {
   } from "react-router-dom";
 import ContentManagementView from "../content-management/content-management.component";
 import LibraryView from "../library/library.component";
-import StorageManagementView from "../storage-management/storage-management.component";
-import AssetExchangeView from "../apps/asset-exchange/asset-exchange.component";
+// import StorageManagementView from "../storage-management/storage-management.component";
+// import AssetExchangeView from "../apps/asset-exchange/asset-exchange.component";
 
 import './home.component.css';
 import { Snackbar } from "@mui/material";
@@ -38,16 +38,28 @@ export default function Home(props) {
             provider,
             rpc: {
               iris: {
-                retrieveBytes: {
-                  description: 'retrieve bytes from iris',
-                  params: [
-                    {
-                      name: 'asset_id',
-                      type: 'u32'
-                    }
-                  ],
-                  type: 'Bytes'
-                }
+                encrypt: {
+                    description: 'Add bytes to IPFS through the Iris gateway',
+                    params: [
+                        {
+                            name: 'byte_stream',
+                            type: 'Bytes'
+                        },
+                        {
+                            name: 'signature',
+                            type: 'Bytes'
+                        },
+                        {
+                            name: 'signer',
+                            type: 'Bytes'
+                        },
+                        {
+                            name: 'message',
+                            type: 'Bytes'
+                        }
+                    ],
+                    type: 'Bytes'
+                },
               }
             }
         });

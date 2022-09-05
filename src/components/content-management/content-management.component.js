@@ -16,6 +16,8 @@ import CreateModal from './create-modal/create-modal.component';
 import { call_registerRule, query_registry } from '../../services/iris-ejection.service';
 import { Button } from '@mui/material';
 import RuleExecutorRegistryModal from './rule-executor.modal';
+import { encrypt } from '../../services/rpc.service';
+import { stringToU8a, u8aToHex, hexToString } from '@polkadot/util';
 
 export default function ContentManagementView(props) {
 
@@ -53,32 +55,18 @@ export default function ContentManagementView(props) {
       // } else {
       // const res = await props.ipfs.add(bytes);
       // const id = await props.ipfs.id();
-      const res = '';
-      const id = '';
-      const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
-      const cid = 'TODO';
-      await call_create(
-        props.api, props.account, multiAddress, cid,
-        dataspaceId, assetId, 1,
-        result => {
-          props.emit('Create: asset with id ' + assetId + ': in block');
-        },
-        result => { 
-          props.emit('Create: asset with id ' + assetId + ': finalized');
-          unsub_assetClasses();
-        }
-      );
-      // }
+      // const res = '';
+      // const id = '';
+      // const multiAddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
+      // const cid = 'TODO';
+      await handleEncryption(bytes, 'random message');
     }
 
     const handleQueryRuleExecutor = async(assetId) => {
       query_registry(props.api, assetId, result => {
         let readableResult = result.toHuman();
-        if (readableResult !== null) {
-          setRuleExecutorAddress(readableResult)
-        } else {
-          setRuleExecutorAddress('no rule registered')
-        }
+        let addr = readableResult !== null ? readableResult : 'no rule registered';
+        setRuleExecutorAddress(addr);
       })
     }
 
@@ -94,8 +82,44 @@ export default function ContentManagementView(props) {
       );
     }
 
+    const handleEncryption = async (plaintext, message)  => {
+      let pubkey = u8aToHex(props.account.publicKey);
+      // console.log(pubkey);
+      // handleSignMessage(message);
+      let signature = await handleSignMessage(message);
+      let sig_as_hex = u8aToHex(signature);
+      await encrypt(
+        props.api, plaintext, sig_as_hex, pubkey, message,
+        result => {
+          console.log(result);
+          console.log(hexToString(result.toString()));
+          let res_string = new TextDecoder().decode(result);
+          console.log(res_string);
+          props.emit('Add bytes RPC: success!');
+        },
+        err => {
+          console.log(err);
+        }
+      );
+    }
+
+    /**
+     * Sign the message with the configured account
+     * @param {The message to sign} message 
+     * @returns The signature
+     */
+    const handleSignMessage = async(message) => {
+      // https://polkadot.js.org/docs/keyring/start/sign-verify/
+      const msg =  stringToU8a(message);
+      const signature = props.account.sign(msg);
+      return signature;
+    }
+
     return (
         <div className="container">
+          <button onClick={() => handleEncryption("test1", "test") }>
+            Test Encryption RPC
+          </button>
           <div className='title-container'>
             <span className='section-title'>Content Management</span>
           </div>
