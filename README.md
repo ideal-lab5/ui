@@ -8,7 +8,6 @@ This is an interface for interacting a with an [Iris](https://iridium-labs.githu
 
 - Setup and run an [Iris node](https://github.com/iridium-labs/substrate/tree/iris)
 - Setup and run an [IPFS node](https://docs.ipfs.io/install/)
-  - It is assumed that the IPFS node exposes it's api on the default port: `4001`.
 
 ### Installation
 
@@ -20,3 +19,15 @@ This is an interface for interacting a with an [Iris](https://iridium-labs.githu
 
 - `docker install iridium/iris-ui`
 - `docker run -it --rm -p 3000:3000 iridiumlabs/iris-ui:latest`
+
+### IPFS Configuration
+
+***This is for testing only - do not do the following in production.***
+If your requests to IPFS are blocked due to CORS, run the following:
+
+``` bash
+ipfs config Addresses.Gateway /ip4/0.0.0.0/tcp/8080
+ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin "[\"*\"]"
+ipfs config --json API.HTTPHeaders.Access-Control-Allow-Credentials "[\"true\"]"
+```

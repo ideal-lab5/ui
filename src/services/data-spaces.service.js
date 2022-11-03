@@ -33,7 +33,7 @@ export async function query_metadata(
 ) {
     return api === null ? null : 
         api.query.dataSpaces.metadata(assetId, (dataspacesMetadata) => 
-                subscriptionCallback(dataspacesMetadata)
+            subscriptionCallback(dataspacesMetadata)
         );
 
 }

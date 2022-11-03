@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { create } from 'ipfs-http-client';
+import * as IPFS from 'ipfs-core'
 
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -13,15 +14,12 @@ import {
     Routes,
     Link,
   } from "react-router-dom";
-import ContentManagementView from "../content-management/content-management.component";
-import LibraryView from "../library/library.component";
-// import StorageManagementView from "../storage-management/storage-management.component";
-// import AssetExchangeView from "../apps/asset-exchange/asset-exchange.component";
 
 import './home.component.css';
-import { Snackbar } from "@mui/material";
+import { getLinkUtilityClass, Snackbar } from "@mui/material";
 import Alert from '@mui/material/Alert';
-import DataSpacesView from "../data-spaces/data-spaces.component";
+import UploadView from "../upload/upload.component";
+import AssetClassDetailsView from "../assets/asset-class-details.component";
 
 export default function Home(props) {
 
@@ -56,6 +54,10 @@ export default function Home(props) {
                         {
                             name: 'message',
                             type: 'Bytes'
+                        },
+                        {
+                            name: 'proxy',
+                            type: 'Bytes'
                         }
                     ],
                     type: 'Bytes'
@@ -72,8 +74,8 @@ export default function Home(props) {
 
     const initializeIpfs = async () => {
         const ipfs = await create({
-            host: 'localhost',
-            port: 5001,
+            host: '127.0.0.1',
+            port: 5002,
             protocol: 'http',
           });
         setIpfs(ipfs);
@@ -100,7 +102,7 @@ export default function Home(props) {
   };
 
     useEffect(() => {
-        if (props.port) {
+        if (props.port && props.host) {
             initializeApi();
             initializeIpfs();
         }
@@ -122,83 +124,46 @@ export default function Home(props) {
                             <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
                                 Iris
                             </IconButton>
-                            <Typography variant="h6" color="inherit" component="div" 
+                            { account === null ? 'No Iris node connected' :
+                            <div className="menu-items">
+                                <Typography variant="h6" color="inherit" component="div" 
+                                    sx={{padding: "30px", fontSize: "16px"}}>
+                                    <Link to="/upload" className="menu-link">
+                                        Upload
+                                    </Link>
+                                </Typography>
+                                <Typography variant="h6" color="inherit" component="div" 
                                 sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/data-spaces" className="menu-link">
-                                    Data Spaces
+                                <Link to='/assets' className="menu-link">
+                                    Asset Details
                                 </Link>
-                            </Typography>
-                            <Typography variant="h6" color="inherit" component="div" 
-                                sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/content-management" className="menu-link">
-                                    Content Management
-                                </Link>
-                            </Typography>
-                            <Typography variant="h6" color="inherit" component="div"
-                                sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/library" className="menu-link">
-                                    Library
-                                </Link>
-                            </Typography>
-                            {/* <Typography variant="h6" color="inherit" component="div"
-                                sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/storage-management" className="menu-link">
-                                    Storage Management
-                                </Link>
-                            </Typography>
-                            <Typography variant="h6" color="inherit" component="div"
-                                sx={{padding: "30px", fontSize: "16px"}}>
-                                <Link to="/apps" className="menu-link">
-                                    Apps
-                                </Link>
-                            </Typography> */}
-                            { account === null ? '' : account.address }
+                                </Typography>
+                            </div>
+                            }
                         </Toolbar>
                     </AppBar>
 
                     <Routes>
-                        <Route exact path="/data-spaces"
+                        <Route exact path="/assets/"
                             element={
-                                <DataSpacesView
+                                <AssetClassDetailsView
                                     account={ account }
                                     api={ api }
                                     emit={ handleEvent }
-                                />
-                            }>
-                        </Route>
-                        <Route exact path="/content-management"
-                            element={
-                                <ContentManagementView
-                                    account={ account }
-                                    api={ api }
                                     ipfs={ ipfs }
-                                    emit={ handleEvent }
                                 />
                             }>
                         </Route>
-                        <Route exact path="/Library" 
-                        element={
-                            <LibraryView
-                                account={ account }
-                                api={ api }
-                                emit={ handleEvent }
-                            />
-                        } />
-                        {/* <Route exact path="/storage-management"
+                        <Route exact path="/upload"
                             element={
-                                <StorageManagementView
-                                    account={ account }
-                                    api={ api }
-                                />
-                            } />
-                        <Route exact path="/apps" 
-                            element={
-                                <AssetExchangeView
+                                <UploadView
                                     account={ account }
                                     api={ api }
                                     emit={ handleEvent }
+                                    ipfs={ ipfs }
                                 />
-                            }/> */}
+                            }>
+                        </Route>
                     </Routes>
                 </div>
             </div>

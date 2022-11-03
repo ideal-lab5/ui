@@ -63,7 +63,7 @@ class App extends React.Component {
           : 
           <div className="login-component">
             <span>
-              Set the host and port that substrate is listening on for WS connections.
+              Set the host and port that Iris is listening on for WS connections.
             </span>
             <form className="login-form">
               <div className="form-field-container">

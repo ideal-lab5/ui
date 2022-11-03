@@ -11,7 +11,7 @@ export async function query_registry(
     api, assetId, success_callback,
 ) {
     return api === null ? null :
-        await api.query.irisEjection
+        await api.query.authorization
             .registry(assetId, (result) => 
                 success_callback(result)
             );

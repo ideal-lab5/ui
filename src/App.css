@@ -13,6 +13,11 @@
   color: #61dafb;
 }
 
+.section {
+  display: grid;
+  width: 40%;
+}
+
 .login-component {
   text-align: center;
   display: inline-grid;
@@ -58,7 +63,7 @@
 }
 
 .title-container {
- text-align: center; 
+ /* text-align: center;  */
 }
 
 .grid {

@@ -11,3 +11,7 @@
 .menu-link:hover {
     color: wheat;
 }
+
+.menu-items {
+    display: contents;
+}
