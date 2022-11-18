@@ -52,7 +52,7 @@ export async function query_metadata(
 export async function query_ingestion_staging(
     api, account, subscriptionCallback,
 ) {
-    return api == null ? null : 
+    return api == null || account === null ? null : 
         await api.query.dataAssets.ingestionStaging(account.address, (result) => 
             subscriptionCallback(result)
         );

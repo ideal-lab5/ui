@@ -36,6 +36,7 @@ export default function UploadView(props) {
       }
     }, []);
     // should check every block.. how can we do this?
+    // debounce staging sub
     setInterval(subscribe_ingestion_staging, 30000);
 
     const handleEncryption = async ()  => {
@@ -45,28 +46,30 @@ export default function UploadView(props) {
 
       let signature = await handleSignMessage(message);
       let sig_as_hex = u8aToHex(signature);
-      await encrypt(
-        props.api, plaintext, sig_as_hex, pubkey, message, pubkey,
-        async result => {
-          const ipv4 = process.env.REACT_APP_IPV4;
-          if (ipv4 === undefined) {
-            console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
+      const ipv4 = process.env.REACT_APP_IPV4;
+      if (ipv4 === undefined) {
+        console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
+      } else {
+        await encrypt(
+          props.api, plaintext, sig_as_hex, pubkey, message, pubkey,
+          async result => {
+            // now add result to IPFS
+            console.log(result);
+            let cid = await props.ipfs.add(result);
+            const id = await props.ipfs.id();
+            const multiaddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
+            setCID(cid.path);
+            setMultiaddress(multiaddress);
+            localStorage.setItem("cid", cid.path);
+            localStorage.setItem("multiaddress", multiaddress);
+            props.emit('Successfully encrypted and staged data.');
+          },
+          err => {
+            props.emit('Encryption failed! Please see logs for more information.' + 
+            ' The error is: ' + err);
           }
-          // now add result to IPFS
-          let cid = await props.ipfs.add(result);
-          const id = await props.ipfs.id();
-          const multiaddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
-          setCID(cid.path);
-          setMultiaddress(multiaddress);
-          localStorage.setItem("cid", cid.path);
-          localStorage.setItem("multiaddress", multiaddress);
-          props.emit('Successfully encrypted and staged data.');
-        },
-        err => {
-          props.emit('Encryption failed! Please see logs for more information.' + 
-          ' The error is: ' + err);
-        }
-      );
+        );
+      }
     }
 
     /**
@@ -109,7 +112,7 @@ export default function UploadView(props) {
         props.api, props.account, props.account.address, cid, maddr,
         (inBlockResult) => {
           console.log('tx included in a block!');
-          props.emit('View asset classes to view your new new asset class.');
+          props.emit('Ingestion process initiated.');
           // clear everything
           setTxInBlock(true);
           setCID('');
@@ -160,12 +163,10 @@ export default function UploadView(props) {
     const CompleteIngestion = () => {
       return (
         <div className='section'>
-          <span>CID: { CID }</span>
-          <span>Multiaddress: { multiaddress }</span>
           <Button
+            className='btn-small'
             size="small"
             variant="contained"
-            color="primary"
             onClick={handleCreateRequest}>
             Complete Upload
           </Button>
@@ -179,21 +180,20 @@ export default function UploadView(props) {
             <span className='section-title'>Upload</span>
           </div>
           <div className='body'>
-
+            <div className='section'>
+              { CID !== '' ? <span>CID: { CID }</span> : <span></span> }
+              { multiaddress !== '' ? <span>Your IPFS multiaddress is: { multiaddress }</span> : <span></span> }
+            </div>
             { txSubmitted === true && txInBlock === false ? 
               <div>
-                Waiting for tx to be included in a block
+                Waiting for tx to be included in a block. This could take a few moments.
               </div> :
-              ingestionCompletionReady === true ? <CompleteIngestion/> : 
+              ingestionCompletionReady === true && fileName !== '' && CID !== '' ? <CompleteIngestion/> : 
               fileName === '' ? <FileUpload/> : 
               CID === '' ? <SubmitFile /> : 
               <div className='section'>
-                <span>Waiting for tx to be included in a block.</span>
+                <span>Waiting for tx to be included in a block. This could take a few moments.</span>
                 <br></br>
-                <span>
-                  {multiaddress}
-                </span>
-                <span>Your CID is: { CID }</span>
               </div>
             }
           </div> 

@@ -1,0 +1,136 @@
+{
+  "source": {
+    "hash": "0x250a78efb12b84af4ffac8a44455b780f7ec0dffa90151ee076ec1f415dc8942",
+    "language": "ink! 3.3.1",
+    "compiler": "rustc 1.64.0-nightly"
+  },
+  "contract": {
+    "name": "rule_executor",
+    "version": "1.0.0",
+    "authors": [
+      "Ideal Labs Developers <https://github.com/ideal-lab5>"
+    ],
+    "repository": "https://github.com/ideal-lab5/iris",
+    "homepage": "https://idealabs.networks/",
+    "license": "GPL-3.0-or-later"
+  },
+  "V3": {
+    "spec": {
+      "constructors": [
+        {
+          "args": [
+            {
+              "label": "version",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 0
+              }
+            }
+          ],
+          "docs": [],
+          "label": "new",
+          "payable": false,
+          "selector": "0x9bae9d5e"
+        }
+      ],
+      "docs": [],
+      "events": [
+        {
+          "args": [
+            {
+              "docs": [],
+              "indexed": false,
+              "label": "public_key",
+              "type": {
+                "displayName": [],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [],
+          "label": "ResultsSubmitted"
+        }
+      ],
+      "messages": [
+        {
+          "args": [
+            {
+              "label": "asset_id",
+              "type": {
+                "displayName": [
+                  "u32"
+                ],
+                "type": 0
+              }
+            },
+            {
+              "label": "public_key",
+              "type": {
+                "displayName": [],
+                "type": 1
+              }
+            }
+          ],
+          "docs": [
+            " Execute the rules specified in the executor",
+            " ",
+            " * `asset_id`: The asset id associated with the data to be accessed",
+            " * `public_key`: An x25519 public key ",
+            " "
+          ],
+          "label": "execute",
+          "mutates": true,
+          "payable": true,
+          "returnType": null,
+          "selector": "0xd00ec894"
+        }
+      ]
+    },
+    "storage": {
+      "struct": {
+        "fields": [
+          {
+            "layout": {
+              "cell": {
+                "key": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "ty": 0
+              }
+            },
+            "name": "version"
+          }
+        ]
+      }
+    },
+    "types": [
+      {
+        "id": 0,
+        "type": {
+          "def": {
+            "primitive": "u32"
+          }
+        }
+      },
+      {
+        "id": 1,
+        "type": {
+          "def": {
+            "array": {
+              "len": 32,
+              "type": 2
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": {
+          "def": {
+            "primitive": "u8"
+          }
+        }
+      }
+    ]
+  }
+}

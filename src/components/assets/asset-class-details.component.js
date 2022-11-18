@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
 import Button from '@mui/material/Button';
@@ -9,8 +9,21 @@ import AssetClassDetailView from './asset-class-detail/asset-class-detail.compon
 
 export default function AssetClassDetailsView(props) {
 
+  // const history = useHistory();
   const [assetId, setAssetId] = useState('');
-  const [doSearch, setDoSearch] = useState(false);
+  const navigate = useNavigate();
+
+  const DetailSearchButton = () => (
+    <Button
+      className='login-form-button btn-small'
+      variant='contained'
+      color='primary'
+      onClick={() => {
+        navigate(`/assets/${assetId}`);
+      }}
+    >Search
+    </Button>
+  );
 
   return (
     <div className="container">
@@ -26,20 +39,25 @@ export default function AssetClassDetailsView(props) {
             <span>Asset Id</span>
             <TextField 
               label="asset id" 
-              variant="outlined" 
+              variant="outlined"
+              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
               onChange={(e) => setAssetId(e.target.value)}/>
           </form>
-          <Button
-            className='login-form-button'
+          <DetailSearchButton />
+          {/* <Button
+            className='login-form-button btn-small'
             variant='contained'
             color='primary'
-            onClick={() => setDoSearch(true)}
           >Search
-          </Button>
+          </Button> */}
         </div>
-        { doSearch === true && assetId !== '' && assetId > 0 ? 
-        <AssetClassDetailView api={props.api} assetId={assetId} />
-        : <div></div>}
+        {/* { doSearch === true && assetId !== '' && assetId > 0 ? 
+        <AssetClassDetailView 
+          account={props.account} 
+          api={props.api} 
+          assetId={assetId}
+          emit={ props.emit } />
+        : <div></div>} */}
       </div>
     </div>
     );

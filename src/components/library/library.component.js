@@ -16,7 +16,7 @@ import {
   query_Metadata_by_AssetId
 } from '../../services/iris-assets.service';
 import { saveAs } from 'file-saver';
-import { query_registry } from '../../services/iris-ejection.service';
+import { query_registry } from '../../services/authorization.service';
 import { Button } from '@mui/material';
 
 export default function LibraryView(props) {
@@ -63,14 +63,14 @@ export default function LibraryView(props) {
     }
 
     const handleQueryRuleExecutor = async(assetId) => {
-      query_registry(props.api, assetId, result => {
-        let readableResult = result.toHuman();
-        if (readableResult !== null) {
-          setRuleExecutorAddress(readableResult)
-        } else {
-          setRuleExecutorAddress('no rule registered')
-        }
-      })
+      // query_registry(props.api, assetId, result => {
+      //   let readableResult = result.toHuman();
+      //   if (readableResult !== null) {
+      //     setRuleExecutorAddress(readableResult)
+      //   } else {
+      //     setRuleExecutorAddress('no rule registered')
+      //   }
+      // })
     }
 
     const download = (file, filename) => {

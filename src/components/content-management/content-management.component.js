@@ -13,7 +13,7 @@ import MintModal from './mint-modal/mint-modal.component';
 
 import { call_create, call_mint, query_AssetClassOwnership } from '../../services/iris-assets.service';
 import CreateModal from './create-modal/create-modal.component';
-import { call_registerRule, query_registry } from '../../services/iris-ejection.service';
+import { call_registerRule } from '../../services/iris-ejection.service';
 import { Button } from '@mui/material';
 import RuleExecutorRegistryModal from './rule-executor.modal';
 import { encrypt } from '../../services/rpc.service';
@@ -63,11 +63,11 @@ export default function ContentManagementView(props) {
     }
 
     const handleQueryRuleExecutor = async(assetId) => {
-      query_registry(props.api, assetId, result => {
-        let readableResult = result.toHuman();
-        let addr = readableResult !== null ? readableResult : 'no rule registered';
-        setRuleExecutorAddress(addr);
-      })
+      // query_registry(props.api, assetId, result => {
+      //   let readableResult = result.toHuman();
+      //   let addr = readableResult !== null ? readableResult : 'no rule registered';
+      //   setRuleExecutorAddress(addr);
+      // })
     }
 
     const handleRegisterRule = async (assetId, ruleAddress) => {
