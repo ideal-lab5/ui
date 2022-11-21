@@ -18,10 +18,9 @@ export async function call_create_request(
     isInBlockCallback, isFinalizedCallback,
 ) {
     await api.tx.dataAssets.createRequest(
-        // account.address,  // caller's account 
-        gatewayAddress,   // gateway account
+        gatewayAddress,   
         0,
-        cid,              // CID to be fetched
+        cid,              
         multiaddress, 
         1,
     ).signAndSend(account, result => {

@@ -119,9 +119,11 @@ export default function AssetClassDetailView(props) {
     // console.log(u8aToHex(keyPair.secretKey));
     localStorage.setItem('secretKey', u8aToHex(keyPair.secretKey));
     await call_ruleExecutor(
-      contract, props.alice, value, gasLimit, assetId, keyPair.publicKey,
+      contract, props.account, value, gasLimit, assetId, keyPair.publicKey,
       result => {
-        // console.log(u8aToHex(result.txHash));
+        // TODO: should probably indicate something?
+        props.emit("Rule executor execution complete.");
+        console.log(u8aToHex(result.txHash));
       },
       err => {
         console.log(err);

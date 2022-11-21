@@ -223,6 +223,7 @@ export default function Home(props) {
                             element={
                                 <UploadView
                                     account={ account }
+                                    alice={ alice }
                                     api={ api }
                                     emit={ handleEvent }
                                     ipfs={ ipfs }

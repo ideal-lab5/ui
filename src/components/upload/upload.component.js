@@ -42,7 +42,10 @@ export default function UploadView(props) {
     const handleEncryption = async ()  => {
       let plaintext = fileBytes;
       let message = 'random message'; 
-      let pubkey = u8aToHex(props.account.publicKey);  
+      let pubkey = u8aToHex(props.account.publicKey);
+      // note: This is temporary. Alice is hardcoded so that we can lazily ensure we always 
+      // choose a valid proxy.
+      let alicePubkey = u8aToHex(props.alice.publicKey);
 
       let signature = await handleSignMessage(message);
       let sig_as_hex = u8aToHex(signature);
@@ -51,10 +54,9 @@ export default function UploadView(props) {
         console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
       } else {
         await encrypt(
-          props.api, plaintext, sig_as_hex, pubkey, message, pubkey,
+          props.api, plaintext, sig_as_hex, pubkey, message, alicePubkey,
           async result => {
             // now add result to IPFS
-            console.log(result);
             let cid = await props.ipfs.add(result);
             const id = await props.ipfs.id();
             const multiaddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
@@ -108,9 +110,10 @@ export default function UploadView(props) {
       let cid = CID === '' ? localStorage.getItem('cid') : CID;
       let maddr = multiaddress === '' ? localStorage.getItem('multiaddress') : multiaddress;
       setTxSubmitted(true);
+      // Note: hardcoding gateway as alice node temporarily (to ensure always a valid gateway)
       await call_create_request(
-        props.api, props.account, props.account.address, cid, maddr,
-        (inBlockResult) => {
+        props.api, props.account, props.alice.address, cid, maddr,
+        (_) => {
           console.log('tx included in a block!');
           props.emit('Ingestion process initiated.');
           // clear everything
@@ -121,9 +124,8 @@ export default function UploadView(props) {
           setFileBytes('');
           setIngestionCompletionReady(false);
         },
-        (finalizedResult) => {
+        (_) => {
           console.log('tx is finalized');
-          // setTxFinalized(true);
         }
       );
     }
@@ -193,7 +195,6 @@ export default function UploadView(props) {
               CID === '' ? <SubmitFile /> : 
               <div className='section'>
                 <span>Waiting for tx to be included in a block. This could take a few moments.</span>
-                <br></br>
               </div>
             }
           </div> 

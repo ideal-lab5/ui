@@ -18,7 +18,9 @@ export async function call_ruleExecutor(
     await contractPromise.tx
     .execute({ value, gasLimit }, assetId, publicKey)
         .signAndSend(account, result => {
-            isInBlockCallback(result);
+            if (result.isInBlock) {
+                isInBlockCallback(result);
+            }
         }, err => {
             errorHandler(err);
         });
