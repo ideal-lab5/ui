@@ -32,6 +32,8 @@ export default function Home(props) {
     const [account, setAccount] = useState(null);
     const [alice, setAlice] = useState(null);
 
+    const [ciphertext, setCiphertext] = useState(null);
+
     const initializeApi = async () => {
         const host = props.host;
         const port = props.port;
@@ -160,6 +162,21 @@ export default function Home(props) {
         }
     }, []);
 
+    const tempHandleCiphertext = (ciphertext) => {
+        setCiphertext(ciphertext);
+    }
+
+    const tempVerifyCiphertext = (verifyText) => {
+        console.log("VERIFYING CIPHERTEXT");
+        console.log("********************");
+        console.log('* data fetch from IPFS is valid? = ' + (verifyText === ciphertext));
+        console.log(verifyText);
+        console.log("********************");
+        console.log(ciphertext);
+        console.log("********************");
+
+    }
+
     return (
         <div className="container">
             <div>
@@ -216,6 +233,7 @@ export default function Home(props) {
                                     api={ api }
                                     emit={ handleEvent }
                                     ipfs={ ipfs }
+                                    verifyCiphertext={ tempVerifyCiphertext } 
                                 />
                             }>
                         </Route>
@@ -227,6 +245,7 @@ export default function Home(props) {
                                     api={ api }
                                     emit={ handleEvent }
                                     ipfs={ ipfs }
+                                    setCiphertext={ tempHandleCiphertext }
                                 />
                             }>
                         </Route>

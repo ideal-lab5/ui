@@ -15,6 +15,7 @@ import { useParams } from 'react-router-dom';
 import { decrypt } from '../../../services/rpc.service';
 
 import { CID as CIDType } from 'ipfs-http-client';
+import { saveAs } from 'file-saver';
 
 export default function AssetClassDetailView(props) {
 
@@ -40,6 +41,7 @@ export default function AssetClassDetailView(props) {
     // clear existing values
     setCID('');
     setPublicKey('');
+    console.log("Query metadata for asset id " + assetId);
     await query_metadata(
       props.api, assetId, async result => {
         if (result !== null && result.toHuman() !== null) {
@@ -55,7 +57,8 @@ export default function AssetClassDetailView(props) {
   const queryReencryptionArtifacts = async(publicKey) => {
     await query_ReencryptionArtifacts(props.api, props.account, publicKey,
       result => {
-        // console.log(result.toHuman());
+        console.log("reencryption artifacts query results");
+        console.log(result.toHuman());
         // this condition may not be sufficient for all conditions
         setReencryptionReady(result !== null && result.verifyingKey !== null);
       });
@@ -64,6 +67,8 @@ export default function AssetClassDetailView(props) {
   const queryCapsuleFragments = async(publicKey) => {
     await query_CapsuleFragments(props.api, props.account, publicKey,
       result => {
+        console.log("capsule fragment query results");
+        console.log(result.toHuman());
         setDecryptionReady(result !== null && result.length > 0);
       });
   }
@@ -140,6 +145,7 @@ export default function AssetClassDetailView(props) {
       for await (const val of props.ipfs.cat(CIDType.parse(CID))) {
         ciphertext.push(val);
       }
+      props.verifyCiphertext(ciphertext[0]);
       console.log(ciphertext[0]);
       // 2. sign message
       let message = 'random message'; 
@@ -148,15 +154,22 @@ export default function AssetClassDetailView(props) {
       let sig_as_hex = u8aToHex(signature);
       // 3. fetch secret key
       let secretKey = localStorage.getItem('secretKey');
+      console.log("DECRYPTING FOR ASSET ID " + assetId);
       await decrypt(
-        props.api, sig_as_hex, pubkey, message, ciphertext[0], assetId, secretKey,
+        props.api, sig_as_hex, pubkey, message, u8aToHex(ciphertext[0]), assetId, secretKey,
         res => {
           console.log(res);
+          download(res, assetId);
         }, err => {
           console.log(err);
         }
       );
     }
+  }
+
+  const download = (file, filename) => {
+    const blob = new Blob([file]);
+    saveAs(blob, filename);
   }
 
   const Decrypt = () => {

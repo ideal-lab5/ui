@@ -56,6 +56,8 @@ export default function UploadView(props) {
         await encrypt(
           props.api, plaintext, sig_as_hex, pubkey, message, alicePubkey,
           async result => {
+            console.log(result);
+            props.setCiphertext(result);
             // now add result to IPFS
             let cid = await props.ipfs.add(result);
             const id = await props.ipfs.id();
