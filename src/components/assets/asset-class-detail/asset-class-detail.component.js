@@ -17,6 +17,16 @@ import { decrypt } from '../../../services/rpc.service';
 import { CID as CIDType } from 'ipfs-http-client';
 import { saveAs } from 'file-saver';
 
+import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { Truncate } from '../../common/common.component';
+
 export default function AssetClassDetailView(props) {
 
   let { assetId } = useParams();
@@ -28,6 +38,27 @@ export default function AssetClassDetailView(props) {
 
   const [reencryptionReady, setReencryptionReady] = useState(false);
   const [decryptionReady, setDecryptionReady] = useState(false);
+
+
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+    },
+  }));
+
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0,
+    },
+  }));
 
   useEffect(() => {
     if  (props.api !== null) {
@@ -41,9 +72,9 @@ export default function AssetClassDetailView(props) {
     // clear existing values
     setCID('');
     setPublicKey('');
-    console.log("Query metadata for asset id " + assetId);
+    console.log("Query metadata for asset id " + props.assetId);
     await query_metadata(
-      props.api, assetId, async result => {
+      props.api, props.assetId, async result => {
         if (result !== null && result.toHuman() !== null) {
           let publicKey = result.toHuman().publicKey;
           setCID(result.toHuman().cid);
@@ -78,7 +109,7 @@ export default function AssetClassDetailView(props) {
     setRuleExecutorAddress('');
     setAssetDetails({});
     await query_assetClassDetails(
-      props.api, assetId, result => {
+      props.api, props.assetId, result => {
         let res = result.toHuman();
         if (res !== null) {
           setAssetDetails({
@@ -94,17 +125,19 @@ export default function AssetClassDetailView(props) {
   }
 
   const queryRuleExecutor = async() => {
-    await query_registry(props.api, assetId, result => {
+    await query_registry(props.api, props.assetId, result => {
       let readableResult = result.toHuman();
+      console.log("adsfasdfjhlkasdfjhlkasdfjhlkasdf");
+      console.log(readableResult);
+      console.log("adsfasdfjhlkasdfjhlkasdfjhlkasdf");
       if (readableResult !== null) {
         setRuleExecutorAddress(readableResult)
       }
     })
   }
 
-  const registerRuleExecutor = async(assetId, contractAddress) => {
-    console.log('called register rule exeuctor');
-    await call_registerRule(props.api, props.account, contractAddress, assetId, 
+  const registerRuleExecutor = async(contractAddress) => {
+    await call_registerRule(props.api, props.account, contractAddress, props.assetId, 
       result => {
         if (result.status.isInBlock) {
           props.emit('New rule executor is registered with your asset id successfully!');
@@ -124,7 +157,7 @@ export default function AssetClassDetailView(props) {
     // console.log(u8aToHex(keyPair.secretKey));
     localStorage.setItem('secretKey', u8aToHex(keyPair.secretKey));
     await call_ruleExecutor(
-      contract, props.account, value, gasLimit, assetId, keyPair.publicKey,
+      contract, props.account, value, gasLimit, props.assetId, keyPair.publicKey,
       result => {
         // TODO: should probably indicate something?
         props.emit("Rule executor execution complete.");
@@ -183,41 +216,30 @@ export default function AssetClassDetailView(props) {
   }
 
   return (
-    <div className='container'>
-      <div className='title-container'>
-        <span className='section-title'>Asset Details</span>
-      </div>
-      <div className='body'>
-        <div className='section'>
-          {assetDetails.owner === undefined ? 
-          <div className='section'>
-            <span>No asset class found with id { assetId }</span>
-          </div> :
-          <div className='section'>
-            <span>CID: {CID}</span>
-            <span>Public Key: {publicKey}</span>
-            <span>Owner: {assetDetails.owner}</span>
-            <span>Supply: {assetDetails.supply}</span>
-            <RuleExecutorModal
-              account={ props.account }
-              api={ props.api }
-              assetId={ assetId }
-              ruleExecutorAddress={ ruleExecutorAddress }
-              owner={ assetDetails.owner }
-              registerRuleExecutor= { registerRuleExecutor }
-              executeRuleExecutor={ executeRuleExecutor }
-            />
-            { 
-              reencryptionReady === true && decryptionReady === true ? 
-                <Decrypt /> :
-                <div>
-                  <span>Execute rule executor to access this content.</span>
-                </div>
-            }
+    <StyledTableRow key={ props.assetId }>
+      <StyledTableCell component="th" scope="row">{ props.assetId }</StyledTableCell>
+      <StyledTableCell align="right"><Truncate input={ CID } maxLength={ 12 } /></StyledTableCell>
+      <StyledTableCell align="right"><Truncate input={ assetDetails.owner } maxLength = {12} /></StyledTableCell>
+      <StyledTableCell align="right">
+        <RuleExecutorModal
+          account={ props.account }
+          api={ props.api }
+          assetId={ props.assetId }
+          ruleExecutorAddress={ ruleExecutorAddress }
+          owner={ assetDetails.owner }
+          registerRuleExecutor={ registerRuleExecutor }
+          executeRuleExecutor={ executeRuleExecutor }
+      />
+      </StyledTableCell>
+      <StyledTableCell align="right">
+      { 
+        reencryptionReady === true && decryptionReady === true ? 
+          <Decrypt /> :
+          <div>
+            <span>Execute rule executor to access this content.</span>
           </div>
-        }
-        </div>
-      </div>
-    </div>
+      }
+      </StyledTableCell>
+    </StyledTableRow>
   );
 }

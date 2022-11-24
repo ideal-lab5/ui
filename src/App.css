@@ -77,3 +77,8 @@
 .btn-small {
   max-width: 200px;
 }
+
+.copy:hover {
+  color: blue;
+  cursor: copy;
+}

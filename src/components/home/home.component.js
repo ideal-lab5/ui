@@ -166,17 +166,6 @@ export default function Home(props) {
         setCiphertext(ciphertext);
     }
 
-    const tempVerifyCiphertext = (verifyText) => {
-        console.log("VERIFYING CIPHERTEXT");
-        console.log("********************");
-        console.log('* data fetch from IPFS is valid? = ' + (verifyText === ciphertext));
-        console.log(verifyText);
-        console.log("********************");
-        console.log(ciphertext);
-        console.log("********************");
-
-    }
-
     return (
         <div className="container">
             <div>
@@ -225,7 +214,7 @@ export default function Home(props) {
                                 />
                             }>
                         </Route>
-                        <Route exact path="/assets/:assetId"
+                        {/* <Route exact path="/assets/:assetId"
                             element={
                                 <AssetClassDetailView
                                     account={ account }
@@ -236,7 +225,7 @@ export default function Home(props) {
                                     verifyCiphertext={ tempVerifyCiphertext } 
                                 />
                             }>
-                        </Route>
+                        </Route> */}
                         <Route exact path="/upload"
                             element={
                                 <UploadView

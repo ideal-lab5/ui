@@ -4,8 +4,11 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import Modal from '@mui/material/Modal';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCopy } from '@fortawesome/free-solid-svg-icons';
+
 import TextField from '@mui/material/TextField';
-import { Keyring } from "@polkadot/api";
+import { Truncate } from '../../common/common.component';
 
 const style = {
   position: 'absolute',
@@ -25,7 +28,7 @@ export default function RuleExecutorModal(props) {
   const handleClose = () => setOpen(false);
 
   const handleSubmit = () => {
-    props.registerRuleExecutor(props.assetId, address);
+    props.registerRuleExecutor(address);
     handleClose();
   };
 
@@ -76,7 +79,7 @@ export default function RuleExecutorModal(props) {
       <Button onClick={handleOpen}>
       { props.ruleExecutorAddress === '' ? 
         <span>View Rule Executor Information</span> : 
-        <span>{ props.ruleExecutorAddress }</span>
+        <Truncate input={ props.ruleExecutorAddress } maxLength={ 12 } copy={ false } />
       }  
       </Button>
       <Modal
@@ -92,6 +95,17 @@ export default function RuleExecutorModal(props) {
           <Typography id="modal-modal-description" sx={{ mt: 2 }}>
             Asset Id: { props.assetId }
           </Typography>
+          <div>
+            <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+              Rule Executor Address: { props.ruleExecutorAddress }
+            </Typography>
+            <FontAwesomeIcon
+              className='copy'
+              icon={faCopy}
+              onClick={() => navigator.clipboard.writeText(props.ruleExecutorAddress) }
+        />
+          </div>
+          
           { props.account === undefined || props.account === null ? <div>Loading...</div> :
               props.ruleExecutorAddress === '' ?
                 props.owner !== props.account.address ?
