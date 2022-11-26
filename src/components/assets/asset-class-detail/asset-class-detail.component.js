@@ -18,18 +18,12 @@ import { CID as CIDType } from 'ipfs-http-client';
 import { saveAs } from 'file-saver';
 
 import { styled } from '@mui/material/styles';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
+
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { Truncate } from '../../common/common.component';
 
 export default function AssetClassDetailView(props) {
-
-  let { assetId } = useParams();
 
   const [CID, setCID] = useState('');
   const [publicKey, setPublicKey] = useState('');
@@ -178,7 +172,6 @@ export default function AssetClassDetailView(props) {
       for await (const val of props.ipfs.cat(CIDType.parse(CID))) {
         ciphertext.push(val);
       }
-      props.verifyCiphertext(ciphertext[0]);
       console.log(ciphertext[0]);
       // 2. sign message
       let message = 'random message'; 
@@ -187,12 +180,12 @@ export default function AssetClassDetailView(props) {
       let sig_as_hex = u8aToHex(signature);
       // 3. fetch secret key
       let secretKey = localStorage.getItem('secretKey');
-      console.log("DECRYPTING FOR ASSET ID " + assetId);
+      console.log("DECRYPTING FOR ASSET ID " + props.assetId);
       await decrypt(
-        props.api, sig_as_hex, pubkey, message, u8aToHex(ciphertext[0]), assetId, secretKey,
+        props.api, sig_as_hex, pubkey, message, u8aToHex(ciphertext[0]), props.assetId, secretKey,
         res => {
           console.log(res);
-          download(res, assetId);
+          download(res, props.assetId);
         }, err => {
           console.log(err);
         }

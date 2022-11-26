@@ -16,7 +16,7 @@
         "@mui/styles": "^5.5.1",
         "@polkadot/api": "^8.14.1",
         "@polkadot/api-contract": "^8.14.1",
-        "@polkadot/rpc-provider": "^9.7.1",
+        "@polkadot/rpc-provider": "^9.9.1",
         "@testing-library/jest-dom": "^5.16.3",
         "@testing-library/react": "^12.1.4",
         "@testing-library/user-event": "^13.5.0",
