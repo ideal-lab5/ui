@@ -56,7 +56,6 @@ export default function UploadView(props) {
         await encrypt(
           props.api, plaintext, sig_as_hex, pubkey, message, alicePubkey,
           async result => {
-            console.log(result);
             props.setCiphertext(result);
             // now add result to IPFS
             let cid = await props.ipfs.add(result);
@@ -116,7 +115,6 @@ export default function UploadView(props) {
       await call_create_request(
         props.api, props.account, props.alice.address, cid, maddr,
         (_) => {
-          console.log('tx included in a block!');
           props.emit('Ingestion process initiated.');
           // clear everything
           setTxInBlock(true);
