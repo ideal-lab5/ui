@@ -1,0 +1,14 @@
+.asset-search-form {
+    padding: 5%;
+    /* display: grid; */
+    width: 10vw;
+    /* border: 1px solid black; */
+}
+  
+.asset-search-form > span {
+
+}
+  
+  /* .login-form-field {
+    padding: 5% !important;
+  } */

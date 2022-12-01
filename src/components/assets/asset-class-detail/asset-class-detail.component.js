@@ -132,7 +132,7 @@ export default function AssetClassDetailView(props) {
   const handleGenerateKeys = async(password) => {
     const tweetnacl = require('tweetnacl');
     let keyPair = tweetnacl.box.keyPair();
-    let key = 'secretKey:' + props.assetId;
+    let key = 'secretKey:' + props.account.address + ':' + props.assetId ;
     localStorage.setItem(key, u8aToHex(keyPair.secretKey));
     setDecryptionPK(u8aToHex(keyPair.publicKey));
     // try fetch the CID here so we don't have to wait later on
@@ -178,7 +178,7 @@ export default function AssetClassDetailView(props) {
       </div>
     );
   }
-
+  // https://polkadot.js.org/apps/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/contracts
   return (
     <StyledTableRow key={ props.assetId }>
       <StyledTableCell component="th" scope="row">{ props.assetId }</StyledTableCell>

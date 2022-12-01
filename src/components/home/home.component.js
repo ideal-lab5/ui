@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { create } from 'ipfs-http-client';
-import * as IPFS from 'ipfs-core'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopy } from '@fortawesome/free-solid-svg-icons';
@@ -19,26 +18,36 @@ import {
   } from "react-router-dom";
 
 import './home.component.css';
-import { Snackbar } from "@mui/material";
+import { Button, Snackbar, TextField } from "@mui/material";
 import Alert from '@mui/material/Alert';
 import UploadView from "../upload/upload.component";
 import AssetClassDetailsView from "../assets/asset-class-details.component";
-import AssetClassDetailView from "../assets/asset-class-detail/asset-class-detail.component";
+
+import irisSpec from '../../resources/iris.json';
+import { ScProvider } from "@polkadot/rpc-provider";
 
 export default function Home(props) {
 
     const [ipfs, setIpfs] = useState(null);
+    const [ipfsHost, setIpfsHost] = useState('');
+    const [ipfsPort, setIpfsPort] = useState(5001);
     const [api, setApi] = useState(null);
     const [account, setAccount] = useState(null);
     const [alice, setAlice] = useState(null);
 
-    const [ciphertext, setCiphertext] = useState(null);
-
     const initializeApi = async () => {
-        const host = props.host;
-        const port = props.port;
-  
-        const provider = new WsProvider(`ws://${host}:${port}`);
+        let provider;
+        if (props.useLightClient) {
+            const customSpec = JSON.stringify(irisSpec);
+            provider = new ScProvider(customSpec);
+            await provider.connect();
+
+        } else {
+            const host = props.host;
+            const port = props.port;        
+            provider = new WsProvider(`ws://${host}:${port}`);
+        }
+
         const api = await ApiPromise.create({
             provider,
             rpc: {
@@ -96,7 +105,6 @@ export default function Home(props) {
                             name: 'secretKey',
                             type: 'Bytes'
                         }
-                        // TODO: explore changing secretKey type to [u8;32]
                     ],
                     type: 'Bytes'
                 }
@@ -110,29 +118,6 @@ export default function Home(props) {
         const alice = keyring.addFromUri('//Alice');
         setAccount(account);
         setAlice(alice);
-    }
-
-    const initializeIpfs = async () => {
-        // TODO: error handling
-        // const host = process.env.IPFS_HOST;
-        const  host = '127.0.0.1';
-        // const port = process.env.IPFS_PORT;
-        const port = 5002;
-        // console.log("IPFS_PORT IS " + port);
-
-        // if (host === null) {
-        //     console.error("Must specify the IPFS_HOST environment variable when starting this applicaiton.");
-        // } else 
-        // if (port === null) {
-        //     console.error("Must specify the IPFS_PORT environment variable when starting this applicaiton.");
-        // } else {
-        const ipfs = await create({
-            host: host,
-            port: port,
-            protocol: 'http',
-        });
-        setIpfs(ipfs);
-        // }
     }
 
     const handleEvent = (eventMessage) => {
@@ -158,25 +143,37 @@ export default function Home(props) {
     useEffect(() => {
         if (props.port && props.host) {
             initializeApi();
-            initializeIpfs();
+            let localStorage_ipfsHost = localStorage.getItem("ipfsHost");
+            let localStorage_ipfsPort = localStorage.getItem("ipfsPort");
+
+            if (localStorage_ipfsHost !== null) {
+                handleIpfsConnect(localStorage_ipfsHost, localStorage_ipfsPort);
+                setIpfsHost(localStorage_ipfsHost);
+                setIpfsPort(localStorage_ipfsPort);
+            }
         }
     }, []);
 
-    const tempHandleCiphertext = (ciphertext) => {
-        setCiphertext(ciphertext);
+    const handleIpfsConnect = async(host, port) => {
+        const ipfs = await create({
+            host: host,
+            port: port,
+            protocol: 'http',
+        });
+        setIpfs(ipfs);
     }
 
     return (
         <div className="container">
             <div>
-                <Snackbar open={open} autoHideDuration={6000} onClose={handleClose} 
+                <Snackbar open={open} autoHideDuration={3000} onClose={handleClose} 
                     anchorOrigin={{horizontal: 'right', vertical: 'top'}} key={'top right'}>
                     <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
                         {alertMessage}
                     </Alert>
                 </Snackbar>
                 <div>
-                    <AppBar position="fixed" 
+                    <AppBar 
                         sx={{bgcolor: "#000000", display: "inline-flex"}}>
                         <Toolbar variant="regular">
                             <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
@@ -200,6 +197,10 @@ export default function Home(props) {
                                 <FontAwesomeIcon icon={faCopy} />
                             </div>
                             }
+                            {/* {
+                                ipfs === null ? <span>No IPFS node connected</span> :
+                                <span>ipfs: { ipfsHost } : {ipfsPort}</span>
+                            } */}
                         </Toolbar>
                     </AppBar>
 
@@ -214,31 +215,58 @@ export default function Home(props) {
                                 />
                             }>
                         </Route>
-                        {/* <Route exact path="/assets/:assetId"
+                        <Route exact path="/upload"
                             element={
-                                <AssetClassDetailView
+                                <UploadView
                                     account={ account }
                                     alice={ alice }
                                     api={ api }
                                     emit={ handleEvent }
                                     ipfs={ ipfs }
-                                    verifyCiphertext={ tempVerifyCiphertext } 
-                                />
-                            }>
-                        </Route> */}
-                        <Route exact path="/upload"
-                            element={
-                                <UploadView
-                                    account={ account }
-                                    alice={ account }
-                                    api={ api }
-                                    emit={ handleEvent }
-                                    ipfs={ ipfs }
-                                    setCiphertext={ tempHandleCiphertext }
+                                    ipfsHost={ ipfsHost }
                                 />
                             }>
                         </Route>
                     </Routes>
+                </div>
+                <div className="body">
+                    { ipfs === null ?
+                    <div>
+                        <span>Configure IPFS Host and Port</span>
+                        <div className="section">
+                            <form className="login-form">
+                                <div className="form-field-container">
+                                    <TextField 
+                                        className="login-form-field" 
+                                        label="Host" 
+                                        variant="outlined" 
+                                        onChange={(e) => {
+                                            setIpfsHost(e.target.value);
+                                            localStorage.setItem('ipfsHost', e.target.value);
+                                        }}
+                                    />
+                                    <TextField 
+                                        className="login-form-field"
+                                        label="Port"
+                                        variant="outlined"
+                                        onChange={ (e) => {
+                                            setIpfsPort(e.target.value);
+                                            localStorage.setItem('ipfsPort', e.target.value);
+                                        }} 
+                                    />
+                                </div>
+                                <Button 
+                                    className="login-form-button login-submit-btn" 
+                                    variant="contained"
+                                    color="primary" 
+                                    onClick={() => handleIpfsConnect(ipfsHost, ipfsPort)} 
+                                > Connect 
+                                </Button>
+                            </form>
+                        </div>
+                    </div> :
+                    <div></div>
+                }
                 </div>
             </div>
         </div>
