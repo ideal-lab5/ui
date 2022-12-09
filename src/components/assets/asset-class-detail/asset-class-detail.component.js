@@ -152,7 +152,7 @@ export default function AssetClassDetailView(props) {
       let signature = await props.account.sign(stringToU8a(message))
       let sig_as_hex = u8aToHex(signature);
       // 3. fetch secret key
-      let secretKey = localStorage.getItem('secretKey:' + props.assetId);
+      let secretKey = localStorage.getItem('secretKey:' + props.account.address + ':' + props.assetId);
       await decrypt(
         props.api, sig_as_hex, pubkey, message, u8aToHex(ciphertext[0]), props.assetId, secretKey,
         res => {

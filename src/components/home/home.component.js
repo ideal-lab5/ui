@@ -26,6 +26,8 @@ import AssetClassDetailsView from "../assets/asset-class-details.component";
 import irisSpec from '../../resources/iris.json';
 import { ScProvider } from "@polkadot/rpc-provider";
 
+import './home.component.css';
+
 export default function Home(props) {
 
     const [ipfs, setIpfs] = useState(null);
@@ -115,7 +117,7 @@ export default function Home(props) {
         setApi(api);
         const keyring = new Keyring({ type: 'sr25519' });
         const account = keyring.addFromUri('//' + props.address);
-        const alice = keyring.addFromUri('//Alice');
+        const alice = keyring.addFromUri('//Bob');
         setAccount(account);
         setAlice(alice);
     }
@@ -173,7 +175,7 @@ export default function Home(props) {
                     </Alert>
                 </Snackbar>
                 <div>
-                    <AppBar 
+                    <AppBar position="fixed"
                         sx={{bgcolor: "#000000", display: "inline-flex"}}>
                         <Toolbar variant="regular">
                             <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
@@ -194,13 +196,19 @@ export default function Home(props) {
                                     </Link>
                                 </Typography>
                                 {account.address}
-                                <FontAwesomeIcon icon={faCopy} />
+                                <FontAwesomeIcon 
+                                    icon={faCopy} 
+                                    onClick={() => navigator.clipboard.writeText(account.address)}
+                                />
                             </div>
                             }
-                            {/* {
-                                ipfs === null ? <span>No IPFS node connected</span> :
-                                <span>ipfs: { ipfsHost } : {ipfsPort}</span>
-                            } */}
+                            {
+                                <div className="ipfs-info-container">
+                                    { ipfs === null ? 
+                                    <span>No IPFS node detected. Please configure a node.</span> : 
+                                    <div>IPFS ready</div> }
+                                </div>
+                            }
                         </Toolbar>
                     </AppBar>
 

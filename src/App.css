@@ -50,7 +50,7 @@
 .container {
   background: white;
   height: 100vh;
-  /* padding: 20%; */
+  overflow: hidden;
 }
 
 .section {
@@ -74,6 +74,8 @@
 
 .body {
   padding: 5%;
+  /* margin-top: 5%; */
+  
 }
 
 .btn-small {

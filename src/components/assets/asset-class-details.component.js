@@ -74,7 +74,7 @@ export default function AssetClassDetailsView(props) {
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 700 }} aria-label="customized table">
           <TableHead>
-            <TableRow>
+            <TableRow key="head">
               <StyledTableCell>Asset Id</StyledTableCell>
               <StyledTableCell align="right">CID</StyledTableCell>
               <StyledTableCell align="right">Owner</StyledTableCell>
