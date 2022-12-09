@@ -15,3 +15,7 @@
 .menu-items {
     display: contents;
 }
+
+.ipfs-info-container {
+    padding: 10px;
+}

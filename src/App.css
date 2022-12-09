@@ -1,12 +1,14 @@
 .App {
   /* background: blue; */
   background-image: linear-gradient(rgb(183, 0, 255) , rgb(6, 2, 255), rgb(4, 10, 99));
-  height: 100vw;
+  height: 100vh;
 }
 
 .App-body {
   /* margin: 10px; */
+  /* height: 100%; */
   display: grid;
+  /* position: relative; */
 }
 
 .App-link {
@@ -16,29 +18,29 @@
 .login-component {
   text-align: center;
   display: inline-grid;
-  padding: 20px;
+  /* padding: 20px; */
   border: solid 1px black;
   background: white;
   margin:auto;
-  margin-top: 100px;
-  border-radius: 15px;
+  margin-top: 15vh;
+  border-radius: 5%;
 }
 
 .login-component > span {
-  padding: 10px;
+  padding: 5%;
 }
 
 /* TODO: move to login component when created */
 .login-form {
-  margin: 10px;
+  margin: 5%;
 }
 
 .login-form > :last-child {
-  margin: 20px;
+  margin: 5%;
 }
 
 .login-form-field {
-  padding: 10px !important;
+  padding: 5% !important;
 }
 
 .form-field-container {
@@ -47,8 +49,8 @@
 
 .container {
   background: white;
-  height: 100vw;
-  padding: 40px;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .section {
@@ -63,7 +65,7 @@
 
 .title-container {
  /* text-align: center;  */
- padding: 20px;
+ /* padding: 20px; */
 }
 
 .grid {
@@ -71,7 +73,9 @@
 }
 
 .body {
-  padding: 60px;
+  padding: 5%;
+  /* margin-top: 5%; */
+  
 }
 
 .btn-small {
@@ -80,5 +84,33 @@
 
 .copy:hover {
   color: blue;
-  cursor: copy;
+  cursor: pointer;
+}
+
+.footer {
+  font-size: 1em;
+  background: black;
+  color: azure;
+  position: absolute;
+  bottom: 0;
+  height: 5%;
+  width: 100%;
+  display: block;
+}
+
+.footer > span {
+  float: right;
+  padding: 10px;
+}
+
+.footer > a {
+  color: white;
+  margin: 10px;
+  text-align: left;
+  text-decoration: none;
+  float: right;
+}
+
+.footer > a:hover {
+  color: cyan;
 }

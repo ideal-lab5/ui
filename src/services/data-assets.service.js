@@ -20,8 +20,8 @@ export async function call_create_request(
     await api.tx.dataAssets.createRequest(
         gatewayAddress,   
         0,
-        cid,              
-        multiaddress, 
+        cid,
+        multiaddress,
         1,
     ).signAndSend(account, result => {
         if (result.status.isInBlock) {

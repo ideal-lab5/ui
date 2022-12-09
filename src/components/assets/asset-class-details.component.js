@@ -17,6 +17,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { query_metadata } from '../../services/data-assets.service';
 
+import './asset-class-details.component.css';
 
 export default function AssetClassDetailsView(props) {
 
@@ -40,14 +41,19 @@ export default function AssetClassDetailsView(props) {
     },
   }));
 
-  // const history = useHistory();
   const [rows, setRows] = useState([]);
   const [assetId, setAssetId] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (props.ipfs === null) {
+      // navigate.push('/');
+    }
+  }, []);
+
   const DetailSearchButton = () => (
     <Button
-      className='login-form-button btn-small'
+      // className='login-form-button btn-small'
       variant='contained'
       color='primary'
       onClick={async () => {
@@ -68,7 +74,7 @@ export default function AssetClassDetailsView(props) {
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 700 }} aria-label="customized table">
           <TableHead>
-            <TableRow>
+            <TableRow key="head">
               <StyledTableCell>Asset Id</StyledTableCell>
               <StyledTableCell align="right">CID</StyledTableCell>
               <StyledTableCell align="right">Owner</StyledTableCell>
@@ -100,23 +106,22 @@ export default function AssetClassDetailsView(props) {
 
   return (
     <div className="container">
-      <div className='title-container'>
-          <span className='section-title'>Asset Class Details</span>
-      </div>
       <div className='body'>
         <div className='section'>
           <Typography id="modal-modal-title" variant="h5" component="h2">
-            Choose asset id
+            Search by Asset Id
           </Typography>
-          <form className="login-form">
+          <form className='asset-search-form'>
             <span>Asset Id</span>
-            <TextField 
-              label="asset id" 
-              variant="outlined"
-              inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-              onChange={(e) => setAssetId(e.target.value)}/>
+            <div>
+              <TextField 
+                label="asset id" 
+                variant="outlined"
+                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                onChange={(e) => setAssetId(e.target.value)}/>
+              <DetailSearchButton />
+            </div>
           </form>
-          <DetailSearchButton />
         </div>
         <div className='section'>
           <DisplayResults />

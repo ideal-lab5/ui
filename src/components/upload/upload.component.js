@@ -6,8 +6,11 @@ import { encrypt } from '../../services/rpc.service';
 import { stringToU8a, u8aToHex } from '@polkadot/util';
 import { call_create_request, query_ingestion_staging } from '../../services/data-assets.service';
 import { Button } from '@material-ui/core';
+import { useNavigate } from 'react-router-dom';
 
 export default function UploadView(props) {
+
+  const navigate = useNavigate();
 
   const [fileBytes, setFileBytes] = useState('');
   const [fileName, setFileName] = useState('');
@@ -30,12 +33,14 @@ export default function UploadView(props) {
   );
 
     useEffect(async () => {
+      if (props.ipfs === null) {
+        navigate('/')
+      }
       // runs every 3 secs
       if (props.api && props.account !== null) {
         subscribe_ingestion_staging(); 
       }
     }, []);
-    // should check every block.. how can we do this?
     // debounce staging sub
     setInterval(subscribe_ingestion_staging, 30000);
 
@@ -49,31 +54,24 @@ export default function UploadView(props) {
 
       let signature = await handleSignMessage(message);
       let sig_as_hex = u8aToHex(signature);
-      const ipv4 = process.env.REACT_APP_IPV4;
-      if (ipv4 === undefined) {
-        console.error("Please provide the REACT_APP_IPV4 environment variable to use this functionality.");
-      } else {
-        await encrypt(
-          props.api, plaintext, sig_as_hex, pubkey, message, alicePubkey,
-          async result => {
-            console.log(result);
-            props.setCiphertext(result);
-            // now add result to IPFS
-            let cid = await props.ipfs.add(result);
-            const id = await props.ipfs.id();
-            const multiaddress = ['', 'ip4', ipv4, 'tcp', '4001', 'p2p', id.id ].join('/');
-            setCID(cid.path);
-            setMultiaddress(multiaddress);
-            localStorage.setItem("cid", cid.path);
-            localStorage.setItem("multiaddress", multiaddress);
-            props.emit('Successfully encrypted and staged data.');
-          },
-          err => {
-            props.emit('Encryption failed! Please see logs for more information.' + 
-            ' The error is: ' + err);
-          }
-        );
-      }
+      await encrypt(
+        props.api, plaintext, sig_as_hex, pubkey, message, alicePubkey,
+        async result => {
+          // now add result to IPFS
+          let cid = await props.ipfs.add(result);
+          const id = await props.ipfs.id();
+          const multiaddress = ['', 'ip4', props.ipfsHost, 'tcp', '4001', 'p2p', id.id ].join('/');
+          setCID(cid.path);
+          setMultiaddress(multiaddress);
+          localStorage.setItem("cid", cid.path);
+          localStorage.setItem("multiaddress", multiaddress);
+          props.emit('Successfully encrypted and staged data.');
+        },
+        err => {
+          props.emit('Encryption failed! Please see logs for more information.' + 
+          ' The error is: ' + err);
+        }
+      );
     }
 
     /**
@@ -116,7 +114,6 @@ export default function UploadView(props) {
       await call_create_request(
         props.api, props.account, props.alice.address, cid, maddr,
         (_) => {
-          console.log('tx included in a block!');
           props.emit('Ingestion process initiated.');
           // clear everything
           setTxInBlock(true);
