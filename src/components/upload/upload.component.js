@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import Typography from '@mui/material/Typography';
 
 import { encrypt } from '../../services/rpc.service';
 import { stringToU8a, u8aToHex } from '@polkadot/util';
@@ -32,7 +31,7 @@ export default function UploadView(props) {
     }
   );
 
-    useEffect(async () => {
+    useEffect(() => {
       if (props.ipfs === null) {
         navigate('/')
       }
@@ -40,7 +39,7 @@ export default function UploadView(props) {
       if (props.api && props.account !== null) {
         subscribe_ingestion_staging(); 
       }
-    }, []);
+    });
     // debounce staging sub
     setInterval(subscribe_ingestion_staging, 30000);
 
@@ -113,7 +112,7 @@ export default function UploadView(props) {
       // Note: hardcoding gateway as alice node temporarily (to ensure always a valid gateway)
       await call_create_request(
         props.api, props.account, props.alice.address, cid, maddr,
-        (_) => {
+        () => {
           props.emit('Ingestion process initiated.');
           // clear everything
           setTxInBlock(true);
@@ -123,7 +122,7 @@ export default function UploadView(props) {
           setFileBytes('');
           setIngestionCompletionReady(false);
         },
-        (_) => {
+        () => {
           console.log('tx is finalized');
         }
       );

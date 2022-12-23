@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ApiPromise, WsProvider, Keyring } from "@polkadot/api";
 import { create } from 'ipfs-http-client';
 
@@ -11,7 +11,6 @@ import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 
 import {
-    BrowserRouter as Router,
     Route,
     Routes,
     Link,
@@ -154,7 +153,7 @@ export default function Home(props) {
                 setIpfsPort(localStorage_ipfsPort);
             }
         }
-    }, []);
+    }, [props.port, props.host, initializeApi]);
 
     const handleIpfsConnect = async(host, port) => {
         const ipfs = await create({

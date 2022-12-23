@@ -46,7 +46,7 @@ export async function query_metadata(
     await api.query.dataAssets.metadata(assetId, (result) => {
         subscriptionCallback(result)
     });
-};
+}
 
 export async function query_ingestion_staging(
     api, account, subscriptionCallback,
