@@ -3,10 +3,6 @@ import './App.css';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import Home from './components/home/home.component';
-import { FormControlLabel, FormGroup, Switch } from '@mui/material';
-
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 class App extends React.Component {
 
@@ -17,7 +13,6 @@ class App extends React.Component {
       port: '9944',
       address: 'Alice',
       connect: false,
-      useLightClient: false,
     }
 
     this.handleKeyPressed = this.handleKeyPressed.bind(this);
@@ -39,7 +34,7 @@ class App extends React.Component {
     this.setState({ address: e.target.value });
   }
 
-  handleConnect(e) {
+  handleConnect() {
     this.setState({connect: true});
   }
 
@@ -51,10 +46,6 @@ class App extends React.Component {
     if (e.key === 'Enter') {
       this.handleConnect();
     }
-  }
-
-  handleUseLightClient(e) {
-    this.setState({ useLightClient: !this.state.useLightClient });
   }
 
   render() {
@@ -110,22 +101,11 @@ class App extends React.Component {
                   onClick={ this.handleConnect.bind(this) } 
                 > Connect 
                 </Button>
-                {/* <FormGroup>
-                  <FormControlLabel control={<Switch onChange={ this.handleUseLightClient.bind(this) } />} label="Use Light Client" />
-                </FormGroup> */}
               </div>
             </form>
         </div>
           }
         </div>
-        {/* <div className='footer'>
-          <a href='https://www.github.com/ideal-lab5/' target='_blank'>
-            <FontAwesomeIcon
-              icon={faGithub}
-            />
-          </a>
-          <span>Ideal Labs, 2022</span>
-        </div> */}
       </div>
     );
   }

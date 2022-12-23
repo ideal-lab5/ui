@@ -6,7 +6,7 @@ import { query_metadata } from '../../../services/data-assets.service';
 import { call_registerRule, query_registry } from '../../../services/authorization.service';
 import RuleExecutorModal from './rule-exector.modal';
 
-import { stringToU8a, u8aToHex, hexToU8a } from '@polkadot/util'
+import { stringToU8a, u8aToHex } from '@polkadot/util'
 
 import { query_CapsuleFragments, query_ReencryptionArtifacts } from '../../../services/iris-proxy.service';
 import { decrypt } from '../../../services/rpc.service';
@@ -23,15 +23,12 @@ import { Truncate } from '../../common/common.component';
 export default function AssetClassDetailView(props) {
 
   const [CID, setCID] = useState('');
-  const [publicKey, setPublicKey] = useState('');
   const [ruleExecutorAddress, setRuleExecutorAddress] = useState('');
   const [assetDetails, setAssetDetails] = useState({});
 
   const [decryptionPK, setDecryptionPK] = useState('');
   const [reencryptionReady, setReencryptionReady] = useState(false);
   const [decryptionReady, setDecryptionReady] = useState(false);
-  
-
 
   const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -59,18 +56,17 @@ export default function AssetClassDetailView(props) {
       queryAssetClassDetails();
       queryRuleExecutor();
     }
-  }, []);
+  });
 
   const queryMetadata = async () => {
     // clear existing values
     setCID('');
-    setPublicKey('');
     await query_metadata(
       props.api, props.assetId, async result => {
         if (result !== null && result.toHuman() !== null) {
           let publicKey = result.toHuman().publicKey;
           setCID(result.toHuman().cid);
-          setPublicKey(publicKey);
+          // setPublicKey(publicKey);
           await queryReencryptionArtifacts(publicKey);
           await queryCapsuleFragments(publicKey);
         }
@@ -129,7 +125,7 @@ export default function AssetClassDetailView(props) {
       });
   }
 
-  const handleGenerateKeys = async(password) => {
+  const handleGenerateKeys = async() => {
     const tweetnacl = require('tweetnacl');
     let keyPair = tweetnacl.box.keyPair();
     let key = 'secretKey:' + props.account.address + ':' + props.assetId ;

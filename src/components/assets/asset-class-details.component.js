@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -31,25 +30,8 @@ export default function AssetClassDetailsView(props) {
     },
   }));
 
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-  }));
-
   const [rows, setRows] = useState([]);
   const [assetId, setAssetId] = useState('');
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (props.ipfs === null) {
-      // navigate.push('/');
-    }
-  }, []);
 
   const DetailSearchButton = () => (
     <Button
@@ -94,6 +76,7 @@ export default function AssetClassDetailsView(props) {
   const addChildRow = async(assetId) => {
     setRows(rows => [...rows, 
       <AssetClassDetailView
+          key={ assetId }
           account={ props.account }
           alice={ props.alice }
           assetId={ assetId }
