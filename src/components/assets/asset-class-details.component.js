@@ -72,7 +72,6 @@ export default function AssetClassDetailsView(props) {
     );
   }
 
-
   const addChildRow = async(assetId) => {
     setRows(rows => [...rows, 
       <AssetClassDetailView

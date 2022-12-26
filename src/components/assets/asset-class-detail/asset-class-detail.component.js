@@ -51,12 +51,12 @@ export default function AssetClassDetailView(props) {
   }));
 
   useEffect(() => {
-    if  (props.api !== null) {
+    if (props.api !== null) {
       queryMetadata();
       queryAssetClassDetails();
       queryRuleExecutor();
     }
-  });
+  }, []);
 
   const queryMetadata = async () => {
     // clear existing values
@@ -66,7 +66,6 @@ export default function AssetClassDetailView(props) {
         if (result !== null && result.toHuman() !== null) {
           let publicKey = result.toHuman().publicKey;
           setCID(result.toHuman().cid);
-          // setPublicKey(publicKey);
           await queryReencryptionArtifacts(publicKey);
           await queryCapsuleFragments(publicKey);
         }

@@ -22,9 +22,6 @@ import Alert from '@mui/material/Alert';
 import UploadView from "../upload/upload.component";
 import AssetClassDetailsView from "../assets/asset-class-details.component";
 
-import irisSpec from '../../resources/iris.json';
-import { ScProvider } from "@polkadot/rpc-provider";
-
 import './home.component.css';
 
 export default function Home(props) {
@@ -37,17 +34,9 @@ export default function Home(props) {
     const [alice, setAlice] = useState(null);
 
     const initializeApi = async () => {
-        let provider;
-        if (props.useLightClient) {
-            const customSpec = JSON.stringify(irisSpec);
-            provider = new ScProvider(customSpec);
-            await provider.connect();
-
-        } else {
-            const host = props.host;
-            const port = props.port;        
-            provider = new WsProvider(`ws://${host}:${port}`);
-        }
+        const host = props.host;
+        const port = props.port;        
+        let provider = new WsProvider(`ws://${host}:${port}`);
 
         const api = await ApiPromise.create({
             provider,
@@ -153,7 +142,7 @@ export default function Home(props) {
                 setIpfsPort(localStorage_ipfsPort);
             }
         }
-    }, [props.port, props.host, initializeApi]);
+    }, []);
 
     const handleIpfsConnect = async(host, port) => {
         const ipfs = await create({
@@ -162,6 +151,48 @@ export default function Home(props) {
             protocol: 'http',
         });
         setIpfs(ipfs);
+    }
+
+    const IpfsConnect = () => {
+        return <div className="body">
+            { ipfs === null ?
+            <div>
+                <span>Configure IPFS Host and Port</span>
+                <div className="section">
+                    <form className="login-form">
+                        <div className="form-field-container">
+                            <TextField 
+                                className="login-form-field" 
+                                label="Host" 
+                                variant="outlined" 
+                                onChange={(e) => {
+                                    setIpfsHost(e.target.value);
+                                    localStorage.setItem('ipfsHost', e.target.value);
+                                }}
+                            />
+                            <TextField 
+                                className="login-form-field"
+                                label="Port"
+                                variant="outlined"
+                                onChange={ (e) => {
+                                    setIpfsPort(e.target.value);
+                                    localStorage.setItem('ipfsPort', e.target.value);
+                                }} 
+                            />
+                        </div>
+                        <Button 
+                            className="login-form-button login-submit-btn" 
+                            variant="contained"
+                            color="primary" 
+                            onClick={() => handleIpfsConnect(ipfsHost, ipfsPort)} 
+                        > Connect 
+                        </Button>
+                    </form>
+                </div>
+            </div> :
+            <div></div>
+        }
+        </div>
     }
 
     return (
@@ -212,6 +243,11 @@ export default function Home(props) {
                     </AppBar>
 
                     <Routes>
+                        <Route exact path="/"
+                            element={
+                                <IpfsConnect />
+                            }>
+                        </Route>
                         <Route exact path="/assets/"
                             element={
                                 <AssetClassDetailsView
@@ -235,45 +271,6 @@ export default function Home(props) {
                             }>
                         </Route>
                     </Routes>
-                </div>
-                <div className="body">
-                    { ipfs === null ?
-                    <div>
-                        <span>Configure IPFS Host and Port</span>
-                        <div className="section">
-                            <form className="login-form">
-                                <div className="form-field-container">
-                                    <TextField 
-                                        className="login-form-field" 
-                                        label="Host" 
-                                        variant="outlined" 
-                                        onChange={(e) => {
-                                            setIpfsHost(e.target.value);
-                                            localStorage.setItem('ipfsHost', e.target.value);
-                                        }}
-                                    />
-                                    <TextField 
-                                        className="login-form-field"
-                                        label="Port"
-                                        variant="outlined"
-                                        onChange={ (e) => {
-                                            setIpfsPort(e.target.value);
-                                            localStorage.setItem('ipfsPort', e.target.value);
-                                        }} 
-                                    />
-                                </div>
-                                <Button 
-                                    className="login-form-button login-submit-btn" 
-                                    variant="contained"
-                                    color="primary" 
-                                    onClick={() => handleIpfsConnect(ipfsHost, ipfsPort)} 
-                                > Connect 
-                                </Button>
-                            </form>
-                        </div>
-                    </div> :
-                    <div></div>
-                }
                 </div>
             </div>
         </div>

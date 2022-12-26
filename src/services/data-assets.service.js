@@ -44,7 +44,7 @@ export async function query_metadata(
 ) {
     return api === null ? null : 
     await api.query.dataAssets.metadata(assetId, (result) => {
-        subscriptionCallback(result)
+        subscriptionCallback(result);
     });
 }
 
