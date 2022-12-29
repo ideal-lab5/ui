@@ -153,48 +153,6 @@ export default function Home(props) {
         setIpfs(ipfs);
     }
 
-    const IpfsConnect = () => {
-        return <div className="body">
-            { ipfs === null ?
-            <div>
-                <span>Configure IPFS Host and Port</span>
-                <div className="section">
-                    <form className="login-form">
-                        <div className="form-field-container">
-                            <TextField 
-                                className="login-form-field" 
-                                label="Host" 
-                                variant="outlined" 
-                                onChange={(e) => {
-                                    setIpfsHost(e.target.value);
-                                    localStorage.setItem('ipfsHost', e.target.value);
-                                }}
-                            />
-                            <TextField 
-                                className="login-form-field"
-                                label="Port"
-                                variant="outlined"
-                                onChange={ (e) => {
-                                    setIpfsPort(e.target.value);
-                                    localStorage.setItem('ipfsPort', e.target.value);
-                                }} 
-                            />
-                        </div>
-                        <Button 
-                            className="login-form-button login-submit-btn" 
-                            variant="contained"
-                            color="primary" 
-                            onClick={() => handleIpfsConnect(ipfsHost, ipfsPort)} 
-                        > Connect 
-                        </Button>
-                    </form>
-                </div>
-            </div> :
-            <div></div>
-        }
-        </div>
-    }
-
     return (
         <div className="container">
             <div>
@@ -242,12 +200,48 @@ export default function Home(props) {
                         </Toolbar>
                     </AppBar>
 
+
+                    <div className="body">
+                        { ipfs === null ?
+                        <div>
+                            <span>Configure IPFS Host and Port</span>
+                            <div className="section">
+                                <form className="login-form">
+                                    <div className="form-field-container">
+                                        <TextField
+                                            className="login-form-field" 
+                                            label="Host" 
+                                            value={ipfsHost}
+                                            onChange={(e) => {
+                                                setIpfsHost(e.target.value);
+                                                localStorage.setItem('ipfsHost', e.target.value);
+                                            }}
+                                        />
+                                        <TextField 
+                                            className="login-form-field"
+                                            label="Port"
+                                            value={ipfsPort}
+                                            onChange={ (e) => {
+                                                setIpfsPort(e.target.value);
+                                                localStorage.setItem('ipfsPort', e.target.value);
+                                            }} 
+                                        />
+                                    </div>
+                                    <Button 
+                                        className="login-form-button login-submit-btn" 
+                                        variant="contained"
+                                        color="primary" 
+                                        onClick={() => handleIpfsConnect(ipfsHost, ipfsPort)} 
+                                    > Connect 
+                                    </Button>
+                                </form>
+                            </div>
+                        </div> :
+                        <div></div>
+                    }
+                    </div>
+
                     <Routes>
-                        <Route exact path="/"
-                            element={
-                                <IpfsConnect />
-                            }>
-                        </Route>
                         <Route exact path="/assets/"
                             element={
                                 <AssetClassDetailsView
