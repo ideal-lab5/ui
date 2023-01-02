@@ -6,7 +6,7 @@ import { query_metadata } from '../../../services/data-assets.service';
 import { call_registerRule, query_registry } from '../../../services/authorization.service';
 import RuleExecutorModal from './rule-exector.modal';
 
-import { stringToU8a, u8aToHex } from '@polkadot/util'
+import { stringToU8a, u8aToHex } from '@polkadot/util';
 
 import { query_CapsuleFragments, query_ReencryptionArtifacts } from '../../../services/iris-proxy.service';
 import { decrypt } from '../../../services/rpc.service';
@@ -155,8 +155,6 @@ export default function AssetClassDetailView(props) {
         //   props.emit('Contract execution successful');
         // }
     });
-    // try fetch the CID here so we don't have to wait later on
-    await props.ipfs.get(CIDType.parse(CID));
   }
 
   const handleDecrypt = async () => {
