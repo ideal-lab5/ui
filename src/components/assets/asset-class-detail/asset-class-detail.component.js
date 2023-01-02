@@ -19,6 +19,8 @@ import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 
 import TableRow from '@mui/material/TableRow';
 import { Truncate } from '../../common/common.component';
+import contractMetadata from '../../../resources/metadata.json';
+import { ContractPromise } from '@polkadot/api-contract';
 
 export default function AssetClassDetailView(props) {
 
@@ -27,6 +29,7 @@ export default function AssetClassDetailView(props) {
   const [assetDetails, setAssetDetails] = useState({});
 
   const [decryptionPK, setDecryptionPK] = useState('');
+  const [isWaitingForContract, setIsWaitingForContract] = useState(false);
   const [reencryptionReady, setReencryptionReady] = useState(false);
   const [decryptionReady, setDecryptionReady] = useState(false);
 
@@ -75,14 +78,20 @@ export default function AssetClassDetailView(props) {
   const queryReencryptionArtifacts = async(publicKey) => {
     await query_ReencryptionArtifacts(props.api, props.account, publicKey,
       result => {
-        setReencryptionReady(result !== null && result.verifyingKey !== null);
+        if (result !== null && result.verifyingKey !== null) {
+          setReencryptionReady(true);
+        }
+
       });
   }
 
   const queryCapsuleFragments = async(publicKey) => {
     await query_CapsuleFragments(props.api, props.account, publicKey,
       result => {
-        setDecryptionReady(result !== null && result.length > 0);
+        if (result !== null && result.length > 0) {
+          setDecryptionReady(true);
+          setIsWaitingForContract(false);
+        }
       });
   }
 
@@ -119,6 +128,7 @@ export default function AssetClassDetailView(props) {
     await call_registerRule(props.api, props.account, contractAddress, props.assetId, 
       result => {
         if (result.status.isInBlock) {
+          setRuleExecutorAddress(contractAddress);
           props.emit('New rule executor is registered with your asset id successfully!');
         }
       });
@@ -128,8 +138,23 @@ export default function AssetClassDetailView(props) {
     const tweetnacl = require('tweetnacl');
     let keyPair = tweetnacl.box.keyPair();
     let key = 'secretKey:' + props.account.address + ':' + props.assetId ;
-    localStorage.setItem(key, u8aToHex(keyPair.secretKey));
-    setDecryptionPK(u8aToHex(keyPair.publicKey));
+    let pk = u8aToHex(keyPair.publicKey);
+    let sk = u8aToHex(keyPair.secretKey);
+    localStorage.setItem(key, sk);
+
+    setDecryptionPK(pk);
+    // get the contract promise
+    let contract = new ContractPromise(props.api, contractMetadata, ruleExecutorAddress);
+    const gasLimit = 3000n * 100000000n;
+    const storageDepositLimit = null;
+    setIsWaitingForContract(true);
+    await contract.tx.execute({gasLimit, storageDepositLimit}, props.assetId, pk)
+      .signAndSend(props.account, result => {
+        console.log(result);
+        // if (result.status.isInBlock) {
+        //   props.emit('Contract execution successful');
+        // }
+    });
     // try fetch the CID here so we don't have to wait later on
     await props.ipfs.get(CIDType.parse(CID));
   }
@@ -151,9 +176,11 @@ export default function AssetClassDetailView(props) {
       await decrypt(
         props.api, sig_as_hex, pubkey, message, u8aToHex(ciphertext[0]), props.assetId, secretKey,
         res => {
+          props.emit('Download initiated');
           download(res, CID);
         }, err => {
           console.log(err);
+          props.emit(err.toString());
         }
       );
     }
@@ -187,7 +214,6 @@ export default function AssetClassDetailView(props) {
           ruleExecutorAddress={ ruleExecutorAddress }
           owner={ assetDetails.owner }
           registerRuleExecutor={ registerRuleExecutor }
-          // executeRuleExecutor={ executeRuleExecutor }
       />
       </StyledTableCell>
       <StyledTableCell align="right">
@@ -195,13 +221,15 @@ export default function AssetClassDetailView(props) {
         reencryptionReady === true && decryptionReady === true ? 
           <Decrypt /> :
           <div>
-            { decryptionPK === '' ? 
+            { isWaitingForContract === false ? 
               <button
+                disabled={ruleExecutorAddress === ''}
                 onClick={ handleGenerateKeys }
-              >Generate keys
+              >Request decryption
               </button> :
-              <div>
-                <Truncate input={ decryptionPK } maxLength={ 12 } />
+              <div className='section'>
+                <span>Awaiting Reencryption</span>
+                <span>public key: <Truncate input={ decryptionPK } maxLength={ 12 } /></span>
               </div>
             }
           </div>

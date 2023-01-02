@@ -1,8 +1,8 @@
 {
   "source": {
-    "hash": "0x250a78efb12b84af4ffac8a44455b780f7ec0dffa90151ee076ec1f415dc8942",
-    "language": "ink! 3.3.1",
-    "compiler": "rustc 1.64.0-nightly"
+    "hash": "0x9254bc90e66c1bef6b4bdb82e84d1cb233f870fea5445c5d21aab82e74d4fd45",
+    "language": "ink! 3.4.0",
+    "compiler": "rustc 1.67.0-nightly"
   },
   "contract": {
     "name": "rule_executor",

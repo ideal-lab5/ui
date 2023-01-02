@@ -31,7 +31,6 @@ export default function Home(props) {
     const [ipfsPort, setIpfsPort] = useState(5001);
     const [api, setApi] = useState(null);
     const [account, setAccount] = useState(null);
-    const [alice, setAlice] = useState(null);
 
     const initializeApi = async () => {
         const host = props.host;
@@ -104,10 +103,8 @@ export default function Home(props) {
         await api.isReady;
         setApi(api);
         const keyring = new Keyring({ type: 'sr25519' });
-        const account = keyring.addFromUri('//' + props.address);
-        const alice = keyring.addFromUri('//Bob');
+        const account = keyring.addFromUri(props.address);
         setAccount(account);
-        setAlice(alice);
     }
 
     const handleEvent = (eventMessage) => {
@@ -150,7 +147,11 @@ export default function Home(props) {
             port: port,
             protocol: 'http',
         });
-        setIpfs(ipfs);
+        let id = await ipfs.id();
+        console.log(id);
+        if (id !== null) {
+            setIpfs(ipfs);
+        }
     }
 
     return (
@@ -256,7 +257,6 @@ export default function Home(props) {
                             element={
                                 <UploadView
                                     account={ account }
-                                    alice={ alice }
                                     api={ api }
                                     emit={ handleEvent }
                                     ipfs={ ipfs }
